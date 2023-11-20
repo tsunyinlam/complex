@@ -1,5 +1,22 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 	<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+	  <meta name="generator" content="Jekyll v4.3.2">
+	  <meta property="og:title" content="R^2 and Complex Mapping Visualizer">
+	  <meta name="author" content="Toby Lam">
+	  <meta property="og:locale" content="en_US">
+	  <meta name="description" content="R^2 and Complex Mapping Visualizer">
+	  <meta property="og:description" content="R^2 and Complex Mapping Visualizer">
+	  <link rel="canonical" href="https://tobylam.xyz/mapping/">
+	  <meta property="og:url" content="https://tobylam.xyz/mapping/">
+	  <meta property="og:site_name" content="Toby Lam’s Blog">
+	  <meta name="twitter:card" content="summary">
+	  <meta property="twitter:title" content="R^2 and Complex mapping visualizer">
+
 		<title>R^2 and Complex Mapping Visualizer</title>
 		<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
 		<script src="js/complex.min.js"></script>
@@ -10,47 +27,52 @@
 		<center>
 			<h1>R^2 and Complex Mapping Visualizer</h1>
 			<h3>Draw on the left plane, and watch the mapping on the right plane!</h3>
-			<a href="https://github.com/tsunyinlam/complex"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="A fork of mabokin's complex visualizer" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
-			<div id="wrapper">
+			<a href="https://github.com/tsunyinlam/complex"><img style="position: absolute; top: 5px; right: 5px; border: 0;"  alt="A fork of mabokin's complex visualizer"></a>
+			<div id="flex-container">
 				<div id="zPlaneDiv"><h2>Left Plane</h2></div>	
+				<div id="settingsDiv">
+					Φ: (x,y) → (u,v) <br>
+					u(x,y) = <input type=text id=real size=5i value="x"><br>
+					v(x,y) = <input type=text id=imag size=5i value="y"><br>
+					<button onclick="realMapUpdate()">Set Φ Map</button> 
+					<br><br>
+					f: z → f(z) <br>
+					f(z) = <input type=text id=mapping size=6i value="z"><br>
+					<button onclick="mapUpdate()">Set f Map</button>
+					<br><br>
+					<button onclick="clearCanvas()">Clear</button>
+					<br>
+					Color: <input class="jscolor" onchange="updateColor(this.jscolor)" value="c74440" size=5>
+					<br>
+					<button id="settingsButton">Settings</button>
+					<div id="settings" class="settings">
+						<div class="settings-content">
+							<b>Range Settings:</b>
+							<br>
+							Z Plane:<br>
+							Max X:<input type="text" id="ZMAXX" value="2" size=4><br>
+							Min X:<input type="text" id="ZMINX" value="-2" size=4><br>
+							Max Y:<input type="text" id="ZMAXY" value="2" size=4><br>
+							Min Y:<input type="text" id="ZMINY" value="-2" size=4><br>
+							W Plane:<br>
+							Max X:<input type="text" id="WMAXX" value="2" size=4><br>
+							Min X:<input type="text" id="WMINX" value="-2" size=4><br>
+							Max Y:<input type="text" id="WMAXY" value="2" size=4><br>
+							Min Y:<input type="text" id="WMINY" value="-2" size=4><br>
+							<button onclick="updateRange()">Update Range</button><br>
+							<button onclick="resetRange()">Reset Range</button><br>
+							<b>Branch Cut Settings:</b><br>
+							Branch Cut Threshhold:<input type="text" id="bct" value="10" size=4><br>
+							<button onclick="updateBCT()">Update BCT</button><br>
+							<button onclick="resetBCT()">Reset BCT</button><br>
+						</div>
+					</div> 
+					<br> <br>
+					<a href="https://tobylam.xyz/2023/11/20/mapping-visualizer#instructions"> Instructions </a>
+				</div>
 				<div id="wPlaneDiv"><h2>Right Plane</h2></div>
 			</div>
-			Φ: (x,y)→(u,v) <br>
-			u(x,y) = <input type=text id=real size=6i value="x"><br>
-			v(x,y) = <input type=text id=imag size=6i value="y"><br>
-			<button onclick="realMapUpdate()">Set Φ Map</button> 
-			<br><br>
-			f: z → f(z) <br>
-			f(z) = <input type=text id=mapping size=6i value="z"><br>
-			<button onclick="mapUpdate()">Set f Map</button>
-			<br><br>
-			<button onclick="clearCanvas()">Clear</button>
-			<br>
-			Color: <input class="jscolor" onchange="updateColor(this.jscolor)" value="FF0000" size=4>
-			<br>
-			<button id="settingsButton">Settings</button>
-			<div id="settings" class="settings">
-				<div class="settings-content">
-					<b>Range Settings:</b>
-					<br>
-					Z Plane:<br>
-					Max X:<input type="text" id="ZMAXX" value="2" size=4><br>
-					Min X:<input type="text" id="ZMINX" value="-2" size=4><br>
-					Max Y:<input type="text" id="ZMAXY" value="2" size=4><br>
-					Min Y:<input type="text" id="ZMINY" value="-2" size=4><br>
-					W Plane:<br>
-					Max X:<input type="text" id="WMAXX" value="2" size=4><br>
-					Min X:<input type="text" id="WMINX" value="-2" size=4><br>
-					Max Y:<input type="text" id="WMAXY" value="2" size=4><br>
-					Min Y:<input type="text" id="WMINY" value="-2" size=4><br>
-					<button onclick="updateRange()">Update Range</button><br>
-					<button onclick="resetRange()">Reset Range</button><br>
-					<b>Branch Cut Settings:</b><br>
-					Branch Cut Threshhold:<input type="text" id="bct" value="10" size=4><br>
-					<button onclick="updateBCT()">Update BCT</button><br>
-					<button onclick="resetBCT()">Reset BCT</button><br>
-				</div>
-			</div>
+			
 		</center>
 		<script type="text/javascript" src="js/script.js"></script>
 		<script type="text/javascript" src="js/box.js"></script>

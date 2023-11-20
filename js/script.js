@@ -12,7 +12,7 @@ var BRANCH_CUT_THRESHHOLD = 10;
 //
 var FRAMESIZE = Math.round(Math.min(window.innerHeight*(0.8),window.innerWidth*(0.4)));
 //
-var STROKECOLOR = "#FF0000";
+var STROKECOLOR = "#c74440";
 //
 document.getElementById("mapping").value = "z";
 // z plane canvas

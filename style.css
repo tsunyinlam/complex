@@ -1,17 +1,15 @@
 body {
     font-family: 'Helvetica', sans-serif;
-    font-weight: 400;
+    font-size: 16px;
   }
 
-h1, h2, h3 {
+text, h1, h2, h3 {
     font-weight: 400;
 }
 
 #zPlaneDiv
 {
-	width: 50%;
-	height: 50%;
-	float: left;
+    flex-grow: 1;
 }
 
 #zCanvas
@@ -21,14 +19,25 @@ h1, h2, h3 {
 
 #wPlaneDiv
 {
-	width: 50%;
-	height: 50%;
-	float: right;
+    flex-grow: 1;
 }
 
 #wCanvas
 {
 	border: 1px solid #000000;
+}
+
+#settingsDiv
+{
+    margin-top: 65px;
+    width: 150px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+#flex-container
+{
+    display:flex;
 }
 
 .settings
