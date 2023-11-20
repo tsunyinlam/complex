@@ -84,7 +84,7 @@ function realMapUpdate()
 {
 	var u = document.getElementById("real").value;
 	var v = document.getElementById("imag").value;
-	var t_value = document.getElementById("time").value;
+	var t_value = parseFloat(document.getElementById("time").value);
 
 	var u_parsed = u.replaceAll("x","(re(z))");
 	var u_parsed_twice = u_parsed.replaceAll("y","(im(z))");
@@ -123,14 +123,20 @@ async function playAnimation()
 	var v_parsed = v.replaceAll("x","(re(z))");
 	var v_parsed_twice = v_parsed.replaceAll("y","(im(z))");
 	
-	var frames = document.getElementById("frames").value;
-	var delay = document.getElementById("delay").value;
+	var frames = parseFloat(document.getElementById("frames").value);
+	var delay = parseFloat(document.getElementById("delay").value);
+
+	var initialTime =parseFloat(document.getElementById("initialTime").value);
+	var endTime = parseFloat(document.getElementById("endTime").value);
+	var totalTimeInterval = endTime - initialTime;
+	var timeInterval = totalTimeInterval / frames;
+
 	try 
 	{
 		for (let index = 0; index <= frames; index++) {
-			var u_parsed_thrice = u_parsed_twice.replaceAll("t",index/frames);
-			console.log(u_parsed_thrice);
-			var v_parsed_thrice = v_parsed_twice.replaceAll("t",index/frames);
+			var time = initialTime + index*timeInterval;
+			var u_parsed_thrice = u_parsed_twice.replaceAll("t",time);
+			var v_parsed_thrice = v_parsed_twice.replaceAll("t",time);
 			var map = "(" + u_parsed_thrice + ")+(" + v_parsed_thrice + ")*i";
 			var funk = Complex.parseFunction(map,['z']);
 			f = function(z){
