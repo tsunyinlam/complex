@@ -84,13 +84,17 @@ function realMapUpdate()
 {
 	var u = document.getElementById("real").value;
 	var v = document.getElementById("imag").value;
+	var t_value = document.getElementById("time").value;
 
 	var u_parsed = u.replaceAll("x","(re(z))");
 	var u_parsed_twice = u_parsed.replaceAll("y","(im(z))");
+	var u_parsed_thrice = u_parsed_twice.replaceAll("t",t_value);
+
 	var v_parsed = v.replaceAll("x","(re(z))");
 	var v_parsed_twice = v_parsed.replaceAll("y","(im(z))");
+	var v_parsed_thrice = v_parsed_twice.replaceAll("t",t_value);
 
-	var map = u_parsed_twice + " + " + v_parsed_twice + "*i";
+	var map = "(" + u_parsed_thrice + ")+(" + v_parsed_thrice + ")*i";
 	
 	try
 	{
@@ -99,6 +103,42 @@ function realMapUpdate()
 			return funk(z);
 		};
 		wMap();
+	}
+	catch (err)
+	{
+		alert("Invalid Function");	
+	}
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function playAnimation()
+{
+	var u = document.getElementById("real").value;
+	var v = document.getElementById("imag").value;
+	var u_parsed = u.replaceAll("x","(re(z))");
+	var u_parsed_twice = u_parsed.replaceAll("y","(im(z))");
+	var v_parsed = v.replaceAll("x","(re(z))");
+	var v_parsed_twice = v_parsed.replaceAll("y","(im(z))");
+	
+	var frames = document.getElementById("frames").value;
+	var delay = document.getElementById("delay").value;
+	try 
+	{
+		for (let index = 0; index <= frames; index++) {
+			var u_parsed_thrice = u_parsed_twice.replaceAll("t",index/frames);
+			console.log(u_parsed_thrice);
+			var v_parsed_thrice = v_parsed_twice.replaceAll("t",index/frames);
+			var map = "(" + u_parsed_thrice + ")+(" + v_parsed_thrice + ")*i";
+			var funk = Complex.parseFunction(map,['z']);
+			f = function(z){
+				return funk(z);
+			};
+			wMap();
+			await sleep(1000*delay);
+		  } 
 	}
 	catch (err)
 	{

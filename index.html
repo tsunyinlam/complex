@@ -32,9 +32,15 @@
 				<div id="zPlaneDiv"><h2>Left Plane</h2></div>	
 				<div id="settingsDiv">
 					Φ: (x,y) → (u,v) <br>
-					u(x,y) = <input type=text id=real size=5i value="x"><br>
-					v(x,y) = <input type=text id=imag size=5i value="y"><br>
-					<button onclick="realMapUpdate()">Set Φ Map</button> 
+					u(x,y,t) = <input type=text id=real size=5i value="x"><br>
+					v(x,y,t) = <input type=text id=imag size=5i value="y"><br> 
+					t is some constant parameter <br>
+					t = <input type=text id=time size=5i value ="0"><br>
+					<button onclick="realMapUpdate()">Set Φ Map</button>  <br>  <br>
+					Animate Φ <br> from t=0 to t=1<br>
+					with <input type=text id=frames size=3i value="25"> frames <br>
+					with ≈<input type=text id=delay size=3i value="0.04"> seconds between frames <br>
+					<button onclick="playAnimation()"> Play animation </button>
 					<br><br>
 					f: z → f(z) <br>
 					f(z) = <input type=text id=mapping size=6i value="z"><br>
