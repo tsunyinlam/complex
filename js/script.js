@@ -80,6 +80,33 @@ function updateColor(jscolor)
 	STROKECOLOR = "#" + jscolor;
 }
 
+function realMapUpdate()
+{
+	var u = document.getElementById("real").value;
+	var v = document.getElementById("imag").value;
+	console.log(u);
+	var u_parsed = u.replaceAll("x","(re(z))");
+	console.log(u_parsed);
+	var u_parsed_twice = u_parsed.replaceAll("y","(im(z))");
+	console.log(u_parsed_twice);
+	var v_parsed = v.replaceAll("x","(re(z))");
+	var v_parsed_twice = v_parsed.replaceAll("y","(im(z))");
+	var map = u_parsed_twice + " + " + v_parsed_twice + "*i";
+	console.log(map);
+	try
+	{
+		var funk = Complex.parseFunction(map,['z']);
+		f = function(z){
+			return funk(z);
+		};
+		wMap();
+	}
+	catch (err)
+	{
+		alert("Invalid Function");	
+	}
+}
+
 function mapUpdate()
 {
 	var map = document.getElementById("mapping").value;
