@@ -84,15 +84,14 @@ function realMapUpdate()
 {
 	var u = document.getElementById("real").value;
 	var v = document.getElementById("imag").value;
-	console.log(u);
+
 	var u_parsed = u.replaceAll("x","(re(z))");
-	console.log(u_parsed);
 	var u_parsed_twice = u_parsed.replaceAll("y","(im(z))");
-	console.log(u_parsed_twice);
 	var v_parsed = v.replaceAll("x","(re(z))");
 	var v_parsed_twice = v_parsed.replaceAll("y","(im(z))");
+
 	var map = u_parsed_twice + " + " + v_parsed_twice + "*i";
-	console.log(map);
+	
 	try
 	{
 		var funk = Complex.parseFunction(map,['z']);
@@ -120,10 +119,6 @@ function mapUpdate()
 	}
 	catch (err)
 	{
-		document.getElementById("mapping").value = "z";
-		f = function(z){
-			return z;
-		};
 		alert("Invalid Function");	
 	}
 }
