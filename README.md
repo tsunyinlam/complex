@@ -1,4 +1,4 @@
-# real-complex-maps
+# mapping
 A web application to visualize mappings on the real plane and complex mappings.
 
 A fork of matbokin's complex mapping visualizer.
