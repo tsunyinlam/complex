@@ -80,21 +80,32 @@ function updateColor(jscolor)
 	STROKECOLOR = "#" + jscolor;
 }
 
+function parse2DFunctions(func)
+{
+	var func_parsed = func.replaceAll("x","(re(z))");
+	var func_parsed_twice = func_parsed.replaceAll("y","(im(z))");
+	return func_parsed_twice;
+}
+
+function parseTime(func, time){
+	func_parsed = func.replaceAll(/t(?!an)(?<!cbrt)(?<!sqrt)(?<!fact)(?<!cot)(?<!fpart)(?<!ipart)(?<!int)/g, time);
+	return func_parsed;
+}
+
+function combineMap(u,v){
+	map = "(" + u + ")+(" + v+ ")*i";
+	return map;
+}
+
 function realMapUpdate()
 {
 	var u = document.getElementById("real").value;
 	var v = document.getElementById("imag").value;
-	var t_value = parseFloat(document.getElementById("time").value);
 
-	var u_parsed = u.replaceAll("x","(re(z))");
-	var u_parsed_twice = u_parsed.replaceAll("y","(im(z))");
-	var u_parsed_thrice = u_parsed_twice.replaceAll("t",t_value);
+	var floatTime = parseFloat(document.getElementById("time").value);
+	var time = "(" + floatTime + ")";
 
-	var v_parsed = v.replaceAll("x","(re(z))");
-	var v_parsed_twice = v_parsed.replaceAll("y","(im(z))");
-	var v_parsed_thrice = v_parsed_twice.replaceAll("t",t_value);
-
-	var map = "(" + u_parsed_thrice + ")+(" + v_parsed_thrice + ")*i";
+	map = combineMap(parseTime(parse2DFunctions(u),time),parseTime(parse2DFunctions(v),time));
 	
 	try
 	{
@@ -106,7 +117,7 @@ function realMapUpdate()
 	}
 	catch (err)
 	{
-		alert("Invalid Function");	
+		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
 	}
 }
 
@@ -118,26 +129,29 @@ async function playAnimation()
 {
 	var u = document.getElementById("real").value;
 	var v = document.getElementById("imag").value;
-	var u_parsed = u.replaceAll("x","(re(z))");
-	var u_parsed_twice = u_parsed.replaceAll("y","(im(z))");
-	var v_parsed = v.replaceAll("x","(re(z))");
-	var v_parsed_twice = v_parsed.replaceAll("y","(im(z))");
+	var u_parsed = parse2DFunctions(u);
+	var v_parsed = parse2DFunctions(v);
+	console.log(u_parsed);
+	console.log(v_parsed);
 	
 	var frames = parseFloat(document.getElementById("frames").value);
 	var delay = parseFloat(document.getElementById("delay").value);
-
 	var initialTime =parseFloat(document.getElementById("initialTime").value);
 	var endTime = parseFloat(document.getElementById("endTime").value);
+
 	var totalTimeInterval = endTime - initialTime;
+	totalTimeInterval = parseFloat(totalTimeInterval);
 	var timeInterval = totalTimeInterval / frames;
+	timeInterval = parseFloat(timeInterval);
 
 	try 
 	{
 		for (let index = 0; index <= frames; index++) {
-			var time = initialTime + index*timeInterval;
-			var u_parsed_thrice = u_parsed_twice.replaceAll("t",time);
-			var v_parsed_thrice = v_parsed_twice.replaceAll("t",time);
-			var map = "(" + u_parsed_thrice + ")+(" + v_parsed_thrice + ")*i";
+			var floatTime = parseFloat(initialTime) + parseFloat(index)*parseFloat(timeInterval);
+			var time = "(" + floatTime + ")";
+			map = combineMap(parseTime(u_parsed,time),parseTime(v_parsed,time));
+			console.log(map);
+
 			var funk = Complex.parseFunction(map,['z']);
 			f = function(z){
 				return funk(z);
@@ -148,7 +162,7 @@ async function playAnimation()
 	}
 	catch (err)
 	{
-		alert("Invalid Function");	
+		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
 	}
 }
 
