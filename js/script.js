@@ -43,6 +43,11 @@ $('#zCanvas').mousemove(function(e) {
 });
 
 $('#zCanvas').mousedown(function(e){
+	if(document.getElementById("autoLinkMin").value < 0.5) {
+		document.getElementById("autoLinkMin").value = "1";
+		alert("Autolink max distance too small (< 0.5) \nIt has been reseted to 1.");
+	}
+
 	var mouseX = e.pageX - this.offsetLeft;
 	var mouseY = e.pageY - this.offsetTop;
 
@@ -75,6 +80,11 @@ $('#zCanvas').on('touchmove', function(e) {
 );
 
 $('#zCanvas').on('touchstart', function(e) {
+	if(document.getElementById("autoLinkMin").value < 0.5) {
+		document.getElementById("autoLinkMin").value = "1";
+		alert("Autolink max distance too small (< 0.5) \nIt has been reseted to 1.");
+	}
+
 	e.preventDefault();
 	var mouseX = e.originalEvent.touches[0].pageX - this.offsetLeft;
 	var mouseY = e.originalEvent.touches[0].pageY - this.offsetTop;
@@ -142,7 +152,9 @@ function parse2DFunctions(func)
 }
 
 function parseTime(func, time){
-	func_parsed = func.replaceAll(/t(?!an)(?<!cbrt)(?<!sqrt)(?<!fact)(?<!cot)(?<!fpart)(?<!ipart)(?<!int)/g, time);
+	var floatTime =  parseFloat(time);
+	var bracketedTime =  "(" + floatTime + ")";
+	func_parsed = func.replaceAll(/t(?!an)(?<!cbrt)(?<!sqrt)(?<!fact)(?<!cot)(?<!fpart)(?<!ipart)(?<!int)/g, bracketedTime);
 	return func_parsed;
 }
 
@@ -151,15 +163,21 @@ function combineMap(u,v){
 	return map;
 }
 
+function finalMapCheck(map){
+	if(map.includes("conj")){
+		alert("Conjugate is not supported at this moment \nConsider using abs(z)^2/z instead, subjected to your branch cut settings");
+	}
+}
+
 function setPhiMap()
 {
 	var u = document.getElementById("real").value;
 	var v = document.getElementById("imag").value;
 
-	var floatTime = parseFloat(document.getElementById("time").value);
-	var time = "(" + floatTime + ")";
-
+	time = parseFloat(document.getElementById("time").value);
 	map = combineMap(parseTime(parse2DFunctions(u),time),parseTime(parse2DFunctions(v),time));
+	finalMapCheck(map);
+
 	try{
 	mapUpdate(map);
 	} catch (err){
@@ -168,11 +186,11 @@ function setPhiMap()
 }
 
 function setFMap() {
-	var floatTime = parseFloat(document.getElementById("time").value);
-	var time = "(" + floatTime + ")";
 
+	var time = document.getElementById("time").value
 	var map = document.getElementById("mapping").value;
 	map = parseTime(map, time);
+	finalMapCheck(map);
 
 	try {
 	mapUpdate(map);
@@ -187,14 +205,8 @@ function sleep(ms) {
 
 async function playAnimation()
 {
+	// Process time settings
 	startTime = new Date();
-
-	var u = document.getElementById("real").value;
-	var v = document.getElementById("imag").value;
-	var u_parsed = parse2DFunctions(u);
-	var v_parsed = parse2DFunctions(v);
-
-	var f = document.getElementById("mapping").value;
 	
 	var initialTime =parseFloat(document.getElementById("initialTime").value);
 	var endTime = parseFloat(document.getElementById("endTime").value);
@@ -207,16 +219,24 @@ async function playAnimation()
 	timeInterval = totalTimeInterval / frames;
 	var delay = 1 / fps;
 
+	// Deal with the choice of which function to animate
+	if (document.getElementById("animate-function").value == "real") {
+		var u = document.getElementById("real").value;
+		var v = document.getElementById("imag").value;
+		var u_parsed = parse2DFunctions(u);
+		var v_parsed = parse2DFunctions(v);
+		var t_map = combineMap(u_parsed,v_parsed);}
+	else{
+		var f = document.getElementById("mapping").value;
+		var t_map = f;
+	}
+
+	finalMapCheck(t_map);
+
 	try{
 		for (let index = 0; index <= frames; index++) {
-			var floatTime = parseFloat(initialTime) + parseFloat(index)*parseFloat(timeInterval);
-			var time = "(" + floatTime + ")";
-
-			if (document.getElementById("animate-function").value == "real") {
-				map = combineMap(parseTime(u_parsed,time),parseTime(v_parsed,time));}
-			else{
-				map = parseTime(f,time);
-			}
+			var time = parseFloat(initialTime) + parseFloat(index)*parseFloat(timeInterval);
+			var map = parseTime(t_map, time);
 			mapUpdate(map);
 
 			await sleep(1000*delay);
@@ -224,7 +244,7 @@ async function playAnimation()
 		endTime = new Date();
 		var timeDiff = endTime - startTime;
 		timeDiff /= 1000;
-		console.log(timeDiff);
+		console.log("Animation took " + timeDiff + " seconds");
 	}
 	catch (err){
 		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
