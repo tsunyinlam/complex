@@ -32,6 +32,7 @@ var clickY = new Array();
 var clickColor = new Array();
 var clickDrag = new Array();
 var paint;
+var midst = false;
 
 $('#zCanvas').mousemove(function(e) {
 	if(paint)
@@ -47,16 +48,59 @@ $('#zCanvas').mousedown(function(e){
 
 	paint = true;
 	addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
+	midst = true;
 	redraw();
 });
 
 $('#zCanvas').mouseup(function(e) {
 	paint = false;
+	midst = false;
 });
 
 $('#zCanvas').mouseleave(function(e) {
 	paint = false;
+	midst = false;
 });
+
+// Mobile touch support (all by Copilot!!)
+
+$('#zCanvas').on('touchmove', function(e) {	
+	e.preventDefault();
+	if(paint)
+	{
+		addClick(e.originalEvent.touches[0].pageX - this.offsetLeft, e.originalEvent.touches[0].pageY - this.offsetTop, true);
+		redraw();
+	}
+}
+);
+
+$('#zCanvas').on('touchstart', function(e) {
+	e.preventDefault();
+	var mouseX = e.originalEvent.touches[0].pageX - this.offsetLeft;
+	var mouseY = e.originalEvent.touches[0].pageY - this.offsetTop;
+
+	paint = true;
+	addClick(e.originalEvent.touches[0].pageX - this.offsetLeft, e.originalEvent.touches[0].pageY - this.offsetTop, false);
+	midst = true;
+	redraw();
+}
+);
+
+$('#zCanvas').on('touchend', function(e) {
+	e.preventDefault();
+	paint = false;
+	midst = false;
+}
+);
+
+$('#zCanvas').on('touchcancel', function(e) {
+	e.preventDefault();
+	paint = false;
+	midst = false;
+}
+);
+
+// Mobile touch support end
 
 var f = function(z){
 	return z;
@@ -64,10 +108,20 @@ var f = function(z){
 
 function addClick(x, y, dragging)
 {
-	clickX.push(x);
-	clickY.push(y);
-	clickColor.push(STROKECOLOR);
-	clickDrag.push(dragging);
+	var clickXPrevious = clickX[clickX.length-1];
+	var clickYPrevious = clickY[clickY.length-1];
+
+	if(distance(clickXPrevious, clickYPrevious, x, y)>document.getElementById("autoLinkMin").value && midst == true) {
+		xMid = (clickXPrevious + x)/2;
+		yMid = (clickYPrevious + y)/2;
+		addClick(xMid, yMid, true);
+		addClick(x, y, true);
+	} else {
+		clickX.push(x);
+		clickY.push(y);
+		clickColor.push(STROKECOLOR);
+		clickDrag.push(dragging);
+	}
 }
 
 function distance(x1,y1,x2,y2)
@@ -82,7 +136,7 @@ function updateColor(jscolor)
 
 function parse2DFunctions(func)
 {
-	var func_parsed = func.replaceAll("x","(re(z))");
+	var func_parsed = func.replaceAll(/x(?!p)/g,"(re(z))");
 	var func_parsed_twice = func_parsed.replaceAll("y","(im(z))");
 	return func_parsed_twice;
 }
@@ -97,7 +151,7 @@ function combineMap(u,v){
 	return map;
 }
 
-function realMapUpdate()
+function setPhiMap()
 {
 	var u = document.getElementById("real").value;
 	var v = document.getElementById("imag").value;
@@ -106,17 +160,23 @@ function realMapUpdate()
 	var time = "(" + floatTime + ")";
 
 	map = combineMap(parseTime(parse2DFunctions(u),time),parseTime(parse2DFunctions(v),time));
-	
-	try
-	{
-		var funk = Complex.parseFunction(map,['z']);
-		f = function(z){
-			return funk(z);
-		};
-		wMap();
+	try{
+	mapUpdate(map);
+	} catch (err){
+		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
 	}
-	catch (err)
-	{
+}
+
+function setFMap() {
+	var floatTime = parseFloat(document.getElementById("time").value);
+	var time = "(" + floatTime + ")";
+
+	var map = document.getElementById("mapping").value;
+	map = parseTime(map, time);
+
+	try {
+	mapUpdate(map);
+	} catch (err){
 		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
 	}
 }
@@ -127,60 +187,58 @@ function sleep(ms) {
 
 async function playAnimation()
 {
+	startTime = new Date();
+
 	var u = document.getElementById("real").value;
 	var v = document.getElementById("imag").value;
 	var u_parsed = parse2DFunctions(u);
 	var v_parsed = parse2DFunctions(v);
-	console.log(u_parsed);
-	console.log(v_parsed);
+
+	var f = document.getElementById("mapping").value;
 	
-	var frames = parseFloat(document.getElementById("frames").value);
-	var delay = parseFloat(document.getElementById("delay").value);
 	var initialTime =parseFloat(document.getElementById("initialTime").value);
 	var endTime = parseFloat(document.getElementById("endTime").value);
-
 	var totalTimeInterval = endTime - initialTime;
-	totalTimeInterval = parseFloat(totalTimeInterval);
-	var timeInterval = totalTimeInterval / frames;
-	timeInterval = parseFloat(timeInterval);
 
-	try 
-	{
+	var fps = parseFloat(document.getElementById("fps").value);
+	var elapseTime = parseFloat(document.getElementById("elapseTime").value);
+
+	var frames = fps * elapseTime;
+	timeInterval = totalTimeInterval / frames;
+	var delay = 1 / fps;
+
+	try{
 		for (let index = 0; index <= frames; index++) {
 			var floatTime = parseFloat(initialTime) + parseFloat(index)*parseFloat(timeInterval);
 			var time = "(" + floatTime + ")";
-			map = combineMap(parseTime(u_parsed,time),parseTime(v_parsed,time));
-			console.log(map);
 
-			var funk = Complex.parseFunction(map,['z']);
-			f = function(z){
-				return funk(z);
-			};
-			wMap();
+			if (document.getElementById("animate-function").value == "real") {
+				map = combineMap(parseTime(u_parsed,time),parseTime(v_parsed,time));}
+			else{
+				map = parseTime(f,time);
+			}
+			mapUpdate(map);
+
 			await sleep(1000*delay);
-		  } 
+			} 
+		endTime = new Date();
+		var timeDiff = endTime - startTime;
+		timeDiff /= 1000;
+		console.log(timeDiff);
 	}
-	catch (err)
-	{
+	catch (err){
 		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
 	}
 }
 
-function mapUpdate()
+function mapUpdate(map)
 {
-	var map = document.getElementById("mapping").value;
-	try
-	{
-		var funk = Complex.parseFunction(map,['z']);
-		f = function(z){
-			return funk(z);
-		};
-		wMap();
-	}
-	catch (err)
-	{
-		alert("Invalid Function");	
-	}
+	console.log("Mapping " + map );
+	var funk = Complex.parseFunction(map,['z']);
+	f = function(z){
+		return funk(z);
+	};
+	wMap();
 }
 
 // w plane canvas

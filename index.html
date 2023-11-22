@@ -1,50 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
-	  <meta name="generator" content="Jekyll v4.3.2">
-	  <meta property="og:title" content="R^2 and Complex Mapping Visualizer">
-	  <meta name="author" content="Toby Lam">
-	  <meta property="og:locale" content="en_US">
-	  <meta name="description" content="R^2 and Complex Mapping Visualizer">
-	  <meta property="og:description" content="R^2 and Complex Mapping Visualizer">
-	  <link rel="canonical" href="https://tobylam.xyz/mapping/">
-	  <meta property="og:url" content="https://tobylam.xyz/mapping/">
-	  <meta property="og:site_name" content="Toby Lam’s Blog">
-	  <meta name="twitter:card" content="summary">
-	  <meta property="twitter:title" content="R^2 and Complex mapping visualizer">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+		<meta name="generator" content="Jekyll v4.3.2">
+		<meta property="og:title" content="R^2 and Complex Mapping Visualizer">
+		<meta name="author" content="Toby Lam">
+		<meta property="og:locale" content="en_US">
+		<meta name="description" content="R^2 and Complex Mapping Visualizer">
+		<meta property="og:description" content="R^2 and Complex Mapping Visualizer">
+		<link rel="canonical" href="https://tobylam.xyz/mapping/">
+		<meta property="og:url" content="https://tobylam.xyz/mapping/">
+		<meta property="og:site_name" content="Toby Lam’s Blog">
+		<meta name="twitter:card" content="summary">
+		<meta property="twitter:title" content="R^2 and Complex mapping visualizer">
 
 		<title>R^2 and Complex Mapping Visualizer</title>
 		<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
 		<script src="js/complex.min.js"></script>
 		<script src="js/jscolor.min.js"></script>
+
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
-		<center>
+		<div class="center">
 			<h1>R^2 and Complex Mapping Visualizer</h1>
 			<h3>Draw on the left plane, and watch the mapping on the right plane!</h3>
-			<a href="https://github.com/tsunyinlam/complex"><img style="position: absolute; top: 5px; right: 5px; border: 0;"  alt="A fork of mabokin's complex visualizer"></a>
+			<a class ="topRightLink" href="https://github.com/tsunyinlam/complex">A fork of mabokin's complex visualizer</a>
 			<div id="flex-container">
 				<div id="zPlaneDiv"><h2>Left Plane</h2></div>	
 				<div id="settingsDiv">
 					Φ: (x,y) → (u,v) <br>
 					u(x,y,t) = <input type=text id=real size=5i value="x"><br>
 					v(x,y,t) = <input type=text id=imag size=5i value="y"><br> 
-					t is some constant parameter <br>
-					t = <input type=text id=time size=5i value ="0"><br>
-					<button onclick="realMapUpdate()">Set Φ Map</button>  <br>  <br>
-					Animate Φ <br> from t=<input type=text id=initialTime size=1i value="0"> to t=<input type=text id=endTime size=1i value="1"><br>
-					with <input type=text id=frames size=3i value="25"> frames <br>
-					with ≈<input type=text id=delay size=3i value="0.04"> seconds between frames <br>
+					<button onclick="setPhiMap()">Set Φ Map</button>  <br>  <br>
+					f: z → f(z,t) <br>
+					f(z,t) = <input type=text id=mapping size=6i value="z"><br>
+					<button onclick="setFMap()">Set f Map</button> <br> <br>
+					t is some real constant parameter <br>
+					t = <input type=text id=time size=5i value ="0"><br><br>
+					Animate <select id="animate-function">
+						<option value="real">Φ</option>
+						<option value="complex">f</option>
+					  </select> <br> from t=<input type=text id=initialTime size=1i value="0"> to t=<input type=text id=endTime size=1i value="1"><br>
+					with <input type=text id=fps size=3i value="24"> frames per second <br>
+					in >≈<input type=text id=elapseTime size=3i value="1"> seconds <br>
 					<button onclick="playAnimation()"> Play Animation </button>
-					<br><br>
-					f: z → f(z) <br>
-					f(z) = <input type=text id=mapping size=6i value="z"><br>
-					<button onclick="mapUpdate()">Set f Map</button>
 					<br><br>
 					<button onclick="clearCanvas()">Clear</button>
 					<br>
@@ -53,6 +55,9 @@
 					<button id="settingsButton">Settings</button>
 					<div id="settings" class="settings">
 						<div class="settings-content">
+							<b> Autolink:</b> <br>
+							Max distance: <input type=text id=autoLinkMin size=2i value ="1"> <br>
+							Points with distance lower than this will be linked <br>
 							<b>Range Settings:</b>
 							<br>
 							Z Plane:<br>
@@ -76,12 +81,11 @@
 					<br> <br>
 					<a href="https://tobylam.xyz/2023/11/20/mapping-visualizer#instructions"> Instructions </a> <br> <br>
 					Clipboard <br> 
-					<textarea style="width:100%; height: 150px" ></textarea>
+					<textarea></textarea>
 				</div>
 				<div id="wPlaneDiv"><h2>Right Plane</h2></div>
 			</div>
-			
-		</center>
+		</div>
 		<script type="text/javascript" src="js/script.js"></script>
 		<script type="text/javascript" src="js/box.js"></script>
 	</body>
