@@ -24,6 +24,21 @@ h2 {
     }
 }
 
+footer {
+    display:none;
+    @media only screen and (max-width: 500px) {
+        display: block;
+        box-sizing: border-box;
+        position: fixed;
+        background-color: white;
+        left: 0;
+        bottom: 0;
+        padding-left: 10px;
+        padding-right: 10px;
+        width: 100%;
+    }
+}
+
 :root {
   --md-elevated-button-container-shape: 0px;
   --md-elevated-button-label-text-font: system-ui;

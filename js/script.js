@@ -1,8 +1,3 @@
-// Tell users to use landscape
-if(window.innerHeight > window.innerWidth){
-    alert("Please use Landscape!");
-}
-
 var Z_MAX_X = 2;
 var Z_MIN_X = -2;
 var Z_MAX_Y = 2;
