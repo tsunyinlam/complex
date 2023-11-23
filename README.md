@@ -6,11 +6,11 @@ Hosted on https://tobylam.xyz/mapping
 - Supports one time parameter for animations
 - Works on Desktop / Mobile browsersn the real plane and complex mappings.
 
-A fork of matbokin's complex mapping visualizer.
+A fork of matbokin's complex mapping visualizer. [Raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues) for any bugs / suggestions.
 
 # Documentation
 
-The visualizer webpage should work on all desktop / mobile browsers. Send me an email if that's not the case!
+The visualizer webpage should work on all desktop / mobile browsers. 
 
 Type `a*b` for $a\times b$ and `a^b` for $a^b$. You're allowed to use the following functions. You could find their definitions [here](https://github.com/tsunyinlam/complex/blob/master/js/complex.min.js). 
 
