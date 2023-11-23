@@ -6,7 +6,7 @@ Hosted on https://tobylam.xyz/mapping
 - Supports one time parameter for animations
 - Works on Desktop / Mobile browsersn the real plane and complex mappings.
 
-A fork of matbokin's complex mapping visualizer. [Raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues) for any bugs / suggestions.
+A fork of [matbokin's](https://github.com/mabotkin/complex) complex mapping visualizer. [Raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues) for any bugs / suggestions.
 
 # Documentation
 
