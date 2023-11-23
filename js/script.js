@@ -1,3 +1,8 @@
+// Tell users to use landscape
+if(window.innerHeight > window.innerWidth){
+    alert("Please use Landscape!");
+}
+
 var Z_MAX_X = 2;
 var Z_MIN_X = -2;
 var Z_MAX_Y = 2;
@@ -10,14 +15,15 @@ var STROKEWIDTH = 5;
 var AXISWIDTH = 1;
 var BRANCH_CUT_THRESHHOLD = 10;
 //
-var FRAMESIZE = Math.round(Math.min(window.innerHeight*(0.8),window.innerWidth*(0.4)));
-//
 var STROKECOLOR = "#c74440";
 //
 document.getElementById("mapping").value = "z";
-// z plane canvas
+
+// Left Plane Canvas
 var zCanvasDiv = document.getElementById('zPlaneDiv');
 var zCanvas = document.createElement('canvas');
+
+var FRAMESIZE = Math.round(Math.min(window.innerHeight*(0.7),zCanvasDiv.clientWidth));
 zCanvas.setAttribute('width', FRAMESIZE);
 zCanvas.setAttribute('height', FRAMESIZE);
 zCanvas.setAttribute('id', 'zCanvas');
@@ -27,90 +33,167 @@ if(typeof G_vmlCanvasManager != 'undefined') {
 }
 var zContext = zCanvas.getContext("2d");	
 
+// Left Plane Data
 var clickX = new Array();
 var clickY = new Array();
 var clickColor = new Array();
 var clickDrag = new Array();
-var paint;
-var midst = false;
 
-$('#zCanvas').mousemove(function(e) {
-	if(paint)
-	{
-		addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+// Genearl Cursor Variables
+var paint;
+var penMidst = false;
+var lineMidst = false;
+
+var lineStarted = false;
+
+var movementAfterCursonDown = false;
+
+var penTool = document.getElementById("penTool");
+var lineTool = document.getElementById("lineTool");
+var lineStartingPointX, lineStartingPointY;
+
+// General Cursor Functions
+function cursormove(cursorX, cursorY) {
+	movementAfterCursonDown = true;
+	if(penTool.checked) {
+		if(paint)
+		{
+			addClick(cursorX, cursorY, true);
+			redraw();
+		}
+	}
+	if(lineTool.checked) {
+
+	}
+}
+
+function cursordown(cursorX, cursorY) {
+	movementAfterCursonDown = false; 
+
+	if(penTool.checked) {
+		if(document.getElementById("autoLinkMin").value < 0.5) {
+			document.getElementById("autoLinkMin").value = "1";
+			alert("Autolink max distance too small (< 0.5) \nIt has been reseted to 1.");
+		}
+
+		paint = true;
+		addClick(cursorX, cursorY);
+		penMidst = true;
 		redraw();
 	}
-});
-
-$('#zCanvas').mousedown(function(e){
-	if(document.getElementById("autoLinkMin").value < 0.5) {
-		document.getElementById("autoLinkMin").value = "1";
-		alert("Autolink max distance too small (< 0.5) \nIt has been reseted to 1.");
+	if(lineTool.checked) {
+		if(lineStarted == false) {
+			lineStartingPointX = cursorX;
+			lineStartingPointY = cursorY;
+			lineStarted = true;
+		} else {
+			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
+			lineStarted = false;
+		}
 	}
+}
 
+function cursorup(cursorX, cursorY) {
+	if(penTool.checked){
+		paint = false;
+		penMidst = false;
+	}
+	if(lineTool.checked) {
+		if ((lineStarted == true) && (distance(lineStartingPointX, lineStartingPointY, cursorX, cursorY) > 10) && (movementAfterCursonDown == true)) {
+			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
+			lineStarted = false;
+		}
+	}
+}
+
+function cursorleave(cursorX, cursorY) {
+	if(penTool.checked){
+		paint = false;
+		penMidst = false;
+	}
+	if(lineTool.checked) {
+		lineStarted = false;  
+	}	
+}
+// General Cursor Functions end
+
+// Desktop mouse support
+$('#zCanvas').mousemove(function(e) {
 	var mouseX = e.pageX - this.offsetLeft;
 	var mouseY = e.pageY - this.offsetTop;
 
-	paint = true;
-	addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
-	midst = true;
-	redraw();
+	console.log("mousemove");
+	cursormove(mouseX, mouseY);
+});
+
+$('#zCanvas').mousedown(function(e){
+	var mouseX = e.pageX - this.offsetLeft;
+	var mouseY = e.pageY - this.offsetTop;
+	
+	console.log("mousedown");
+	cursordown(mouseX, mouseY);
 });
 
 $('#zCanvas').mouseup(function(e) {
-	paint = false;
-	midst = false;
+	var mouseX = e.pageX - this.offsetLeft;
+	var mouseY = e.pageY - this.offsetTop;
+
+	console.log("mouseup");
+	cursorup(mouseX, mouseY);
 });
 
 $('#zCanvas').mouseleave(function(e) {
-	paint = false;
-	midst = false;
+	var mouseX = e.pageX - this.offsetLeft;
+	var mouseY = e.pageY - this.offsetTop;
+
+	console.log("mouseleave");
+	cursorleave(mouseX, mouseY);
 });
+// Desktop mouse support end
+
 
 // Mobile touch support (all by Copilot!!)
-
 $('#zCanvas').on('touchmove', function(e) {	
 	e.preventDefault();
-	if(paint)
-	{
-		addClick(e.originalEvent.touches[0].pageX - this.offsetLeft, e.originalEvent.touches[0].pageY - this.offsetTop, true);
-		redraw();
-	}
+	touchX = e.originalEvent.touches[0].pageX - this.offsetLeft;
+	touchY = e.originalEvent.touches[0].pageY - this.offsetTop;
+
+	console.log("touchmove");
+	cursormove(touchX, touchY);
 }
 );
 
 $('#zCanvas').on('touchstart', function(e) {
-	if(document.getElementById("autoLinkMin").value < 0.5) {
-		document.getElementById("autoLinkMin").value = "1";
-		alert("Autolink max distance too small (< 0.5) \nIt has been reseted to 1.");
-	}
-
 	e.preventDefault();
-	var mouseX = e.originalEvent.touches[0].pageX - this.offsetLeft;
-	var mouseY = e.originalEvent.touches[0].pageY - this.offsetTop;
+	var touchX = e.originalEvent.touches[0].pageX - this.offsetLeft;
+	var touchY = e.originalEvent.touches[0].pageY - this.offsetTop;
 
-	paint = true;
-	addClick(e.originalEvent.touches[0].pageX - this.offsetLeft, e.originalEvent.touches[0].pageY - this.offsetTop, false);
-	midst = true;
-	redraw();
+	console.log("touchstart");
+	cursordown(touchX, touchY);
 }
 );
 
 $('#zCanvas').on('touchend', function(e) {
 	e.preventDefault();
-	paint = false;
-	midst = false;
+	// It seems that touch data cannot be retrieved when touch ends?
+
+	console.log("touchend");
+	cursorup(touchX, touchY);
 }
 );
 
 $('#zCanvas').on('touchcancel', function(e) {
 	e.preventDefault();
-	paint = false;
-	midst = false;
+	
+	var touchX = e.originalEvent.touches[0].pageX - this.offsetLeft;
+	var touchY = e.originalEvent.touches[0].pageY - this.offsetTop;
+
+	console.log("touchcancel");
+	cursorleave(touchX, touchY);
 }
 );
-
 // Mobile touch support end
+
 
 var f = function(z){
 	return z;
@@ -121,7 +204,7 @@ function addClick(x, y, dragging)
 	var clickXPrevious = clickX[clickX.length-1];
 	var clickYPrevious = clickY[clickY.length-1];
 
-	if(distance(clickXPrevious, clickYPrevious, x, y)>document.getElementById("autoLinkMin").value && midst == true) {
+	if(distance(clickXPrevious, clickYPrevious, x, y)>document.getElementById("autoLinkMin").value && (penMidst || lineMidst)) {
 		xMid = (clickXPrevious + x)/2;
 		yMid = (clickYPrevious + y)/2;
 		addClick(xMid, yMid, true);
@@ -132,6 +215,18 @@ function addClick(x, y, dragging)
 		clickColor.push(STROKECOLOR);
 		clickDrag.push(dragging);
 	}
+}
+
+function addLine(x1, y1, x2, y2) {
+	console.log("adding line with addLine");
+	console.log("from " + x1 + " " + y1 + " to " + x2 + " " + y2);
+
+	addClick(x1, y1);
+	lineMidst = true;
+	addClick(x2, y2);
+	lineMidst = false;
+
+	redraw();
 }
 
 function distance(x1,y1,x2,y2)

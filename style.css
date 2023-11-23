@@ -5,6 +5,23 @@ body {
 
 text, h1, h2, h3 {
     font-weight: 400;
+
+    @media only screen and (max-width: 1000px) {
+        margin: 5px;
+    }
+}
+
+h1 {
+    @media only screen and (max-width: 1000px) {
+        margin-top: 25px;
+        font-size: 1.5em;
+    }
+}
+
+h2 {
+    @media only screen and (max-width: 1000px) {
+        font-size: 1em;
+    }
 }
 
 :root {
@@ -27,7 +44,7 @@ text, h1, h2, h3 {
 }
 
 textarea {
-    width:100%; height: 150px
+    width:95%; height: 150px
 }
 
 #zPlaneDiv
@@ -51,12 +68,31 @@ textarea {
 	border: 1px solid #000000;
 }
 
-#settingsDiv
+#drawingTools
 {
+    margin: 10px;
+    margin-top: 50px;
+    flex-shrink: 0;
+    @media only screen and (max-width: 1000px) {
+        margin-top: 10px;
+    }
+}
+
+#drawingToolRadioDiv
+{
+    text-align: left;
+}
+
+#middleDiv
+{
+    margin: 10px;
     margin-top: 65px;
     width: 150px;
     display: inline-block;
     flex-shrink: 0;
+    @media only screen and (max-width: 1000px) {
+        margin-top: 10px;
+    }
 }
 
 #flex-container
