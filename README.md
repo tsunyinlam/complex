@@ -4,7 +4,7 @@ Hosted on https://tobylam.xyz/mapping
 - Plot functions from $\mathbb{R}^2$ to $\mathbb{R}^2$ and $\mathbb{C}$ to $\mathbb{C}$
     - Sketch any curve and see the image of that curve under the function in real time
 - Supports one time parameter for animations
-- Works on Desktop / Mobile browsersn the real plane and complex mappings.
+- Works on Desktop / Mobile browsers
 
 A fork of [matbokin's](https://github.com/mabotkin/complex) complex mapping visualizer. [Raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues) for any bugs / suggestions!
 
