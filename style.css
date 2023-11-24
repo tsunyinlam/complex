@@ -1,3 +1,8 @@
+header {
+    text-align: center;
+    border-bottom: 1px solid #e8e8e8;
+}
+
 body {
     font-family: 'Helvetica', sans-serif;
     font-size: 16px;
@@ -12,15 +17,20 @@ text, h1, h2, h3 {
 }
 
 h1 {
+    color: #15141A;
+    margin: 12.5px;
     @media only screen and (max-width: 1000px) {
-        margin-top: 5px;
+        margin: 5px;
         font-size: 1.5em;
     }
 }
 
 h2 {
-    font-size: 1.3em;
+    color: #15141A;
+    font-size: 1.1em;
+    margin: 7.5px;
     @media only screen and (max-width: 1000px) {
+        margin: 5px;
         font-size: 1em;
     }
 }
@@ -28,6 +38,7 @@ h2 {
 h3 {
     font-size: 1.5em;
     @media only screen and (max-width: 1000px) {
+        margin-top: 10px;
         font-size: 1em;
     }
 }
@@ -70,7 +81,7 @@ footer {
 }
 
 textarea {
-    width:95%; height: 150px
+    width:95%; height: 80px
 }
 
 #zPlaneDiv

@@ -24,10 +24,12 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
-		<div class="center">
+		<header> 
 			<h1>Complex and R^2 Graph Plotter</h1>
 			<h2>Draw on the left plane, and watch the plot on the right plane!</h2>
 			<a class ="topRightLink" href="https://github.com/tsunyinlam/complex">A fork of mabokin's complex visualizer</a>
+		</header>
+		<div class="center">
 			<div id="flex-container">
 				<div id ="drawingTools">
 					Tools <br>
@@ -40,27 +42,29 @@
 							<input type = text id="gridHorizontal" style="width: 10px" value = "3"> x <input type = text id="gridVertical" style="width: 10px" value = "3"> <br> <br>
 						-->
 					Color <br>
-					<input class="jscolor" onchange="updateColor(this.jscolor)" value="c74440" size=5> <br> 
+					<input class="jscolor" onchange="updateColor(this.jscolor)" value="c74440" size=5> <br> <br>
+					<button onclick="clearCanvas()">Clear <br> Canvas</button> <br>
 				</div>
 				<div id="zPlaneDiv"><h3>Left Plane</h3> </div>	
 				<div id="middleDiv">
 					Φ: (x,y) → (u,v) <br>
-					u(x,y,t) = <input type=text id=real size=5i value="x"><br>
-					v(x,y,t) = <input type=text id=imag size=5i value="y"><br> 
+					<label for="real">u(x,y,t) = </label><input type=text name="u(x,y,t)" id=real size=5i value="x"><br>
+					<label for="imag">v(x,y,t) = </label><input type=text name="v(x,y,t)" id=imag size=5i value="y"><br> 
 					<button onclick="setPhiMap()">Set Φ Map</button>  <br>  <br>
 					f: z → f(z,t) <br>
-					f(z,t) = <input type=text id=mapping size=6i value="z"><br>
+					<label for="mapping">f(z,t) = </label><input type=text name ="f(z,t)" id=mapping size=6i value="z"><br>
 					<button onclick="setFMap()">Set f Map</button> <br> <br>
 					t is a real constant <br>
-					t = <input type=text id=time size=5i value ="0"><br><br>
+					<label for="time">t = </label><input type=text id=time name = "value for time" size=5i value ="0"><br><br>
 					Animate <select id="animate-function">
 						<option value="real">Φ</option>
 						<option value="complex">f</option>
-					  </select> <br> from t=<input type=text id=initialTime size=1i value="0"> to t=<input type=text id=endTime size=1i value="1"><br>
-					in >≈<input type=text id=elapseTime size=3i value="1"> seconds <br>
+					  </select> <br> 
+					from <label for="initialTime">t=</label><input type=text id=initialTime name="intial time of animation" size=1i value="0"> 
+					to <label for="endTime">t=</label><input type=text name="end time of animation" id=endTime size=1i value="1"><br>
+					<label for="elapseTime">in >≈ </label><input type=text id=elapseTime name="approximate duration of animation" size=3i value="1"> seconds <br>
 					<button onclick="playAnimation()"> Play Animation </button>
 					<br><br>
-					<button onclick="clearCanvas()">Clear Canvas</button> <br>
 					<button id="settingsButton">Settings</button>
 					<div id="settings" class="settings">
 						<div class="settings-content">
