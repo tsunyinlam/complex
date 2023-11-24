@@ -1,4 +1,4 @@
-# mapping-visualizer
+# complex-plotter
 Hosted on https://tobylam.xyz/mapping
 
 - Plot graphs of functions from $\mathbb{R}^2$ to $\mathbb{R}^2$ and $\mathbb{C}$ to $\mathbb{C}$
