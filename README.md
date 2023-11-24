@@ -13,9 +13,10 @@ A fork of [matbokin's](https://github.com/mabotkin/complex) complex mapping visu
 The visualizer webpage should work on all desktop / mobile browsers. 
 
 ## Basic Usage 
-- Set your f(z,t) or u(x,y,t) and v(x,y,t) (See below)
+- Write your f(z,t) or u(x,y,t) and v(x,y,t) in the textboxes (See below)
 - Choose a value for t (if you're using it in your function declarations) 
 - Click `Set Phi Map` or `Set f Map`
+    - Click the set map buttons everytime you change your functions to see the changes take effect
 - Draw on the left plane and see the output on the right
     - Drawing tools are on the leftmost column
     - Change color of the pen at any time
