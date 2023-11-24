@@ -115,6 +115,13 @@ textarea {
     }
 }
 
+input[type=radio]
+{
+    transform: scale(1.5); 
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 #drawingToolRadioDiv
 {
     text-align: left;
