@@ -1,5 +1,5 @@
 # complex-plotter
-Hosted on https://tobylam.xyz/mapping
+Hosted on https://tobylam.xyz/plotter
 
 - Plot graphs of functions from $\mathbb{R}^2$ to $\mathbb{R}^2$ and $\mathbb{C}$ to $\mathbb{C}$
     - Sketch any curve and see the image of that curve under the function in real time
