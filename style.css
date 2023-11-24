@@ -13,7 +13,7 @@ text, h1, h2, h3 {
 
 h1 {
     @media only screen and (max-width: 1000px) {
-        margin-top: 25px;
+        margin-top: 5px;
         font-size: 1.5em;
     }
 }
@@ -60,6 +60,9 @@ footer {
     right: 0;
     margin: 5px;
     text-align: right;
+    @media only screen and (max-width: 1000px) {
+        display:none;
+    }
 }
 
 .center {

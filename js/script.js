@@ -17,8 +17,13 @@ document.getElementById("mapping").value = "z";
 // Left Plane Canvas
 var zCanvasDiv = document.getElementById('zPlaneDiv');
 var zCanvas = document.createElement('canvas');
+if(window.innerWidth > 1000){
+	var canvasMaxHeight = window.innerHeight-300;
+} else {
+	var canvasMaxHeight = window.innerHeight-100;
+}
 
-var FRAMESIZE = Math.round(Math.min(window.innerHeight*(0.7),zCanvasDiv.clientWidth));
+var FRAMESIZE = Math.round(Math.min(canvasMaxHeight,zCanvasDiv.clientWidth));
 zCanvas.setAttribute('width', FRAMESIZE);
 zCanvas.setAttribute('height', FRAMESIZE);
 zCanvas.setAttribute('id', 'zCanvas');
