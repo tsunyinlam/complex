@@ -5,18 +5,18 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
 		<meta name="generator" content="Jekyll v4.3.2">
-		<meta property="og:title" content="R^2 and Complex Mapping Visualizer">
+		<meta property="og:title" content="Complex and R^2 Graph Plotter">
 		<meta name="author" content="Toby Lam">
 		<meta property="og:locale" content="en_US">
-		<meta name="description" content="R^2 and Complex Mapping Visualizer">
-		<meta property="og:description" content="R^2 and Complex Mapping Visualizer">
-		<link rel="canonical" href="https://tobylam.xyz/mapping/">
-		<meta property="og:url" content="https://tobylam.xyz/mapping/">
+		<meta name="description" content="Sketch curves and see their images under complex functions">
+		<meta property="og:description" content="Sketch curves and see their images under complex functions">
+		<link rel="canonical" href="https://tobylam.xyz/plotter/">
+		<meta property="og:url" content="https://tobylam.xyz/plotter/">
 		<meta property="og:site_name" content="Toby Lam’s Blog">
 		<meta name="twitter:card" content="summary">
-		<meta property="twitter:title" content="R^2 and Complex mapping visualizer">
+		<meta property="twitter:title" content="Complex and R^2 Graph Plotter">
 
-		<title>R^2 and Complex Mapping Visualizer</title>
+		<title>Complex and R^2 Graph Plotter</title>
 		<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
 		<script src="js/complex.min.js"></script>
 		<script src="js/jscolor.min.js"></script>
@@ -25,8 +25,8 @@
 	</head>
 	<body>
 		<div class="center">
-			<h1>R^2 and Complex Mapping Visualizer</h1>
-			<h3>Draw on the left plane, and watch the mapping on the right plane!</h3>
+			<h1>Complex and R^2 Graph Plotter</h1>
+			<h2>Draw on the left plane, and watch the plot on the right plane!</h2>
 			<a class ="topRightLink" href="https://github.com/tsunyinlam/complex">A fork of mabokin's complex visualizer</a>
 			<div id="flex-container">
 				<div id ="drawingTools">
@@ -42,7 +42,7 @@
 					Color <br>
 					<input class="jscolor" onchange="updateColor(this.jscolor)" value="c74440" size=5> <br> 
 				</div>
-				<div id="zPlaneDiv"><h2>Left Plane</h2> </div>	
+				<div id="zPlaneDiv"><h3>Left Plane</h3> </div>	
 				<div id="middleDiv">
 					Φ: (x,y) → (u,v) <br>
 					u(x,y,t) = <input type=text id=real size=5i value="x"><br>
@@ -86,13 +86,13 @@
 						</div>
 					</div> 
 					<br> <br>
-					<a href="https://github.com/tsunyinlam/mapping-visualizer#documentation"> Documentation </a> <br>  <br>
-					<a href="https://github.com/tsunyinlam/mapping-visualizer/issues"> Report a bug / Suggest a feature </a> <br> <br>
+					<a href="https://github.com/tsunyinlam/complex-plotter#documentation"> Documentation </a> <br>  <br>
+					<a href="https://github.com/tsunyinlam/complex-plotter/issues"> Report a bug / Suggest a feature </a> <br> <br>
 					<a> </a>
 					Clipboard <br> 
 					<textarea></textarea>
 				</div>
-				<div id="wPlaneDiv"><h2>Right Plane</h2></div>
+				<div id="wPlaneDiv"><h3>Right Plane</h3></div>
 			</div>
 		</div>
 		<script type="text/javascript" src="js/script.js"></script>
