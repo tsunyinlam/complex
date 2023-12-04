@@ -6,7 +6,7 @@ Hosted on https://tobylam.xyz/plotter
 - Supports one time parameter for animations
 - Works on Desktop / Mobile browsers
 
-A fork of [matbokin's](https://github.com/mabotkin/complex) complex mapping visualizer. [Raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues) for any bugs / suggestions!
+A fork of [mabokin's](https://github.com/mabotkin/complex) complex mapping visualizer. [Raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues) for any bugs / suggestions!
 
 ![screenshot](https://tobylam.xyz/assets/images/2023-11-24-screenshot.webp)
 
