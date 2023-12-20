@@ -27,7 +27,7 @@
 		<header> 
 			<h1>Complex and R^2 Graph Plotter</h1>
 			<h2>Draw on the left plane, and watch the plot on the right plane!</h2>
-			<a class ="topRightLink" href="https://github.com/tsunyinlam/complex">A fork of mabokin's complex visualizer</a>
+			<a class ="topRightLink" href="https://github.com/tsunyinlam/complex">A fork of mabotkin's complex visualizer</a>
 		</header>
 		<div class="center">
 			<div id="flex-container">
@@ -41,6 +41,8 @@
 						<!-- 
 							<input type = text id="gridHorizontal" style="width: 10px" value = "3"> x <input type = text id="gridVertical" style="width: 10px" value = "3"> <br> <br>
 						-->
+					<button onclick="drawGrid()"> Draw a <br> Grid</button> <br> <br>
+					<button onclick="drawAltGrid()"> Draw alt <br> Grid</button> <br> <br>
 					Color <br>
 					<input class="jscolor" onchange="updateColor(this.jscolor)" value="c74440" name="brush color" id="brushColor" size=5> <br> <br>
 					<button onclick="clearCanvas()">Clear <br> Canvas</button> <br>
@@ -51,7 +53,7 @@
 					<label for="real">u(x,y,t) = </label><input type=text name="u(x,y,t)" id=real size=5i value="x"><br>
 					<label for="imag">v(x,y,t) = </label><input type=text name="v(x,y,t)" id=imag size=5i value="y"><br> 
 					<button onclick="setPhiMap()">Set Φ Map</button>  <br>  <br>
-					f: z → f(z,t) <br>
+					f: ℂ → ℂ <br>
 					<label for="mapping">f(z,t) = </label><input type=text name ="f(z,t)" id=mapping size=6i value="z"><br>
 					<button onclick="setFMap()">Set f Map</button> <br> <br>
 					t is a real constant <br>
@@ -89,9 +91,11 @@
 							<button onclick="resetBCT()">Reset BCT</button><br>
 						</div>
 					</div> <br> <br>
+					<button onclick="shareGraph()" id="shareButton">Share your graph <br> (copy link)</button> <br> <br>
 					<label for="clipboard">Clipboard</label><br> 
 					<textarea id="clipboard"></textarea>
 					<br> <br>
+					<button onclick="randomize()">Randomize</button> <br> <br>
 					<a href="https://github.com/tsunyinlam/complex-plotter#documentation"> Documentation </a> <br>  <br>
 					<a href="https://github.com/tsunyinlam/complex-plotter/issues"> Report a bug / Suggest a feature </a> <br> 
 				</div>
@@ -105,4 +109,6 @@
 	<footer>
 		<p> <img src="rotate.webp" alt="" style="width:16px; height:16px" > Rotate your device and refresh the webpage for a better experience</p>
 	</footer>
+
+	<script src="js/readUrl.js"> </script>
 </html>

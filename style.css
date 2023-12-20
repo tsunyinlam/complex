@@ -27,7 +27,7 @@ h1 {
 
 h2 {
     color: #15141A;
-    font-size: 1.1em;
+    font-size: 1.05em;
     margin: 7.5px;
     @media only screen and (max-width: 1000px) {
         margin: 5px;
@@ -81,7 +81,11 @@ footer {
 }
 
 textarea {
-    width:95%; height: 80px
+    width:95%; 
+    height: 80px;
+    min-height: 80px;
+    max-width: 95%;
+    min-width: 95%;
 }
 
 #zPlaneDiv

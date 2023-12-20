@@ -17,8 +17,10 @@ document.getElementById("mapping").value = "z";
 // Left Plane Canvas
 var zCanvasDiv = document.getElementById('zPlaneDiv');
 var zCanvas = document.createElement('canvas');
-if(window.innerWidth > 1000){
-	var canvasMaxHeight = window.innerHeight-300;
+if(window.innerWidth > 1000){		
+	var canvasMaxHeight1 = window.innerHeight*0.7;
+	var canvasMaxHeight2 = window.innerHeight-195;
+	var canvasMaxHeight = Math.min(canvasMaxHeight1,canvasMaxHeight2);
 } else {
 	var canvasMaxHeight = window.innerHeight-100;
 }
@@ -354,6 +356,170 @@ function mapUpdate(map)
 		return funk(z);
 	};
 	wMap();
+}
+
+function addUrlParameters(url, id, value) {
+	var newUrl = url;
+	if(url.includes("?")){
+		newUrl += "&" + id + "=" + value;
+	} else {
+		newUrl += "?" + id + "=" + value;
+	}
+	return newUrl;
+}
+
+function shareGraph(){
+	var inputs, index;
+	var url = "https://tobylam.xyz/plotter/";
+
+	inputs = document.getElementsByTagName('input');
+	for (index = 0; index < inputs.length; ++index) {
+		if(inputs[index].type != "radio"){	
+			if ((inputs[index].value != inputs[index].defaultValue)) { 
+				if (inputs[index].id != "brushColor") {
+					url = addUrlParameters(url, inputs[index].id, inputs[index].value);
+				}
+			}
+		}
+	}
+
+	url = addUrlParameters(url, "animate-function", document.getElementById("animate-function").value);
+	url = addUrlParameters(url, "clipboard", document.getElementById("clipboard").value);	
+
+	navigator.clipboard.writeText(url);
+	alert("Link copied!");
+}
+
+function randomize(){
+
+	drawGrid();
+	document.getElementById("mapping").value = "1/(z+" + Math.round(Math.random() * 20 - 10)/10 + "+" + Math.round(Math.random() * 20 - 10)/10 + "*i)";
+	setFMap();
+	STROKECOLOR = originalStrokeColor;
+}
+
+function drawGrid(){
+	originalStrokeColor = STROKECOLOR;
+	// Red
+	STROKECOLOR = "#EE6352";
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE / 4;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE / 4;
+	addLine(x1, y1, x2, y2);
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 3 / 8;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 3 / 8;
+	addLine(x1, y1, x2, y2);
+
+	// Green
+	STROKECOLOR = "#59CD90";
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 5 / 8;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 5 / 8;
+	addLine(x1, y1, x2, y2);
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 3 / 4;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 3 / 4;
+	addLine(x1, y1, x2, y2);
+
+	// Reusing above code but flip x and y coordinates
+	// Blue
+	STROKECOLOR = "#3FA7D6";
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE / 4;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE / 4;
+	addLine(y1, x1, y2, x2);
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 3 / 8;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 3 / 8;
+	addLine(y1, x1, y2, x2);
+
+	// Yellow
+	STROKECOLOR = "#FAC05E";
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 5 / 8;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 5 / 8;
+	addLine(y1, x1, y2, x2);
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 3 / 4;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 3 / 4;
+	addLine(y1, x1, y2, x2);
+
+	// Black
+	STROKECOLOR = "#000000";
+	x1 = FRAMESIZE * 1/4;
+	y1 = FRAMESIZE / 2;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE / 2;
+	addLine(y1, x1, y2, x2);
+	addLine(x1, y1, x2, y2);
+	STROKECOLOR = originalStrokeColor;
+}
+
+function drawAltGrid(){
+	originalStrokeColor = STROKECOLOR;
+	// Red
+	STROKECOLOR = "#EE6352";
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 5 / 16;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 5 / 16;
+	addLine(x1, y1, x2, y2);
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 7 / 16;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 7 / 16;
+	addLine(x1, y1, x2, y2);
+
+	// Green
+	STROKECOLOR = "#59CD90";
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 9 / 16;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 9 / 16;
+	addLine(x1, y1, x2, y2);
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 11 / 16;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 11 / 16;
+	addLine(x1, y1, x2, y2);
+
+	// Reusing above code but flip x and y coordinates
+	// Blue
+	STROKECOLOR = "#3FA7D6";
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 5 / 16;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 5 / 16;
+	addLine(y1, x1, y2, x2);
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 7 / 16;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 7 / 16;
+	addLine(y1, x1, y2, x2);
+
+	// Yellow
+	STROKECOLOR = "#FAC05E";
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 9 / 16;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 9 / 16;
+	addLine(y1, x1, y2, x2);
+	x1 = FRAMESIZE / 4;
+	y1 = FRAMESIZE * 11 / 16;
+	x2 = FRAMESIZE * 3 / 4;
+	y2 = FRAMESIZE * 11 / 16;
+	addLine(y1, x1, y2, x2);
+
+	STROKECOLOR = originalStrokeColor;
 }
 
 // w plane canvas
