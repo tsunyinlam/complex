@@ -47,12 +47,16 @@ var penMidst = false;
 var lineMidst = false;
 
 var lineStarted = false;
+var circleStarted = false;
 
 var movementAfterCursonDown = false;
 
 var penTool = document.getElementById("penTool");
 var lineTool = document.getElementById("lineTool");
+var circleTool = document.getElementById("circleTool");
+
 var lineStartingPointX, lineStartingPointY;
+var circleStartingPointX, circleStartingPointY;
 
 // General Cursor Functions
 function cursormove(cursorX, cursorY) {
@@ -65,6 +69,9 @@ function cursormove(cursorX, cursorY) {
 		}
 	}
 	if(lineTool.checked) {
+
+	}
+	if(circleTool.checked) {
 
 	}
 }
@@ -93,6 +100,17 @@ function cursordown(cursorX, cursorY) {
 			lineStarted = false;
 		}
 	}
+	if(circleTool.checked) {	
+		if(circleStarted == false) {
+			circleStartingPointX = cursorX;
+			circleStartingPointY = cursorY;
+			circleStarted = true;
+		} else {
+			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
+			addCircle(circleStartingPointX, circleStartingPointY, radius);
+			circleStarted = false;
+		}
+	}
 }
 
 function cursorup(cursorX, cursorY) {
@@ -106,6 +124,13 @@ function cursorup(cursorX, cursorY) {
 			lineStarted = false;
 		}
 	}
+	if(circleTool.checked) {
+		if ((circleStarted == true) && (distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY) > 10) && (movementAfterCursonDown == true)) {
+			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
+			addCircle(circleStartingPointX, circleStartingPointY, radius);
+			circleStarted = false;
+		}
+	}
 }
 
 function cursorleave(cursorX, cursorY) {
@@ -116,6 +141,9 @@ function cursorleave(cursorX, cursorY) {
 	if(lineTool.checked) {
 		lineStarted = false;  
 	}	
+	if(circleTool.checked) {
+		circleStarted = false;
+	}
 }
 // General Cursor Functions end
 
@@ -408,8 +436,8 @@ function shareGraph(){
 }
 
 function randomize(){
-
-	drawGrid();
+	clearCanvas();
+	drawPolar();
 	document.getElementById("mapping").value = "1/(z+" + Math.round(Math.random() * 20 - 10)/10 + "+" + Math.round(Math.random() * 20 - 10)/10 + "*i)";
 	setFMap();
 	STROKECOLOR = originalStrokeColor;
