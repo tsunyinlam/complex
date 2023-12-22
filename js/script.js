@@ -41,26 +41,147 @@ var clickY = new Array();
 var clickColor = new Array();
 var clickDrag = new Array();
 
+var currentX = 0;
+var currentY = 0;
+
 // Genearl Cursor Variables
+
+// Drawing variables
 var paint;
 var penMidst = false;
 var lineMidst = false;
 
+
+var firstCursorDown = false;
+// true if and only if there's been one mousemove followed by a mousedown post reset
+// Updates at the end of mousedown / mousemove
+var movementAfterCursonDown = false;
+
+// Toggle truth variable for mousedown
+// Updates at the end of mousedown / mousemove
 var lineStarted = false;
 var circleStarted = false;
-
-var movementAfterCursonDown = false;
 
 var penTool = document.getElementById("penTool");
 var lineTool = document.getElementById("lineTool");
 var circleTool = document.getElementById("circleTool");
 
-var lineStartingPointX, lineStartingPointY;
-var circleStartingPointX, circleStartingPointY;
+var lineStartingPointX = 0; 
+var lineStartingPointY = 0;
+var circleStartingPointX = 0;
+var circleStartingPointY = 0;
+
+var markerSprite = new Image();
+markerSprite.src = "marker.webp";
+var markerWidth = 12;
+var markerHeight = 20;
+var markerX = -markerWidth;
+var markerY = -markerHeight;
+
+function updateCurrent(x, y) {
+	currentX = x;
+	currentY = y;
+}
+
+function updateMarker(x, y) {
+	markerX = x - markerWidth/2;
+	markerY = y - markerHeight;
+	redraw();
+}
+
+function hideMarker(){
+	markerX = -markerWidth;
+	markerY = -markerHeight;
+	redraw();
+}
+
+function resetTools(){
+	firstCursorDown = false; 	
+	movementAfterCursonDown = false;
+	penMidst = false;
+	lineMidst = false;
+	lineStarted = false;
+	circleStarted = false;
+	lineStartingPointX = 0; 
+	lineStartingPointY = 0;
+	circleStartingPointX = 0;
+	circleStartingPointY = 0;
+	markerX = -markerWidth;
+	markerY = -markerHeight;
+	redraw();
+}
+
+function mousedown(cursorX, cursorY) {
+	firstCursorDown = true;
+	if(penTool.checked) {
+		if(document.getElementById("autoLinkMin").value < 0.5) {
+			document.getElementById("autoLinkMin").value = "1";
+			alert("Autolink max distance too small (< 0.5) \nIt has been reseted to 1.");
+		}
+		paint = true;
+		addClick(cursorX, cursorY);
+		penMidst = true;
+		redraw();
+	}
+	// lineTool and circleTool
+	if(lineTool.checked) {
+		if(lineStarted) {
+			if(movementAfterCursonDown){
+				// Draw line now and reset
+				addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
+				resetTools();
+			} else {
+				// Line started (so there's been a down) but there's no movement 
+				// So we need to reset and start anew
+				resetTools();
+				// Even firstCursorDown got set to false, we still need to set it to true
+				firstCursorDown = true;
+				// Start a new line 
+				lineStarted = true;
+				lineStartingPointX = cursorX;
+				lineStartingPointY = cursorY;
+				updateMarker(lineStartingPointX, lineStartingPointY);
+			}
+		} else {
+			// Start a new line 
+			lineStarted = true;
+			lineStartingPointX = cursorX;
+			lineStartingPointY = cursorY;
+			updateMarker(cursorX, cursorY);
+		}
+	}
+	if(circleTool.checked) {	
+		if(circleStarted) {
+			if(movementAfterCursonDown){
+				// Draw circle now and reset
+				var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
+				addCircle(circleStartingPointX, circleStartingPointY, radius);
+				resetTools();
+			} else {
+				// Circle started (so there's been a down) but there's no movement 
+				// So we need to reset and start anew
+				resetTools();
+				// Even firstCursorDown got set to false, we still need to set it to true
+				firstCursorDown = true;
+				// Start a new circle 
+				circleStarted = true;
+				circleStartingPointX = cursorX;
+				circleStartingPointY = cursorY;
+				updateMarker(circleStartingPointX, circleStartingPointY);
+			}
+		} else {
+			// Start a new circle 
+			circleStarted = true;
+			circleStartingPointX = cursorX;
+			circleStartingPointY = cursorY;
+			updateMarker(cursorX, cursorY);
+		}
+	}
+	movementAfterCursonDown = false;
+}
 
 // General Cursor Functions
-function cursormove(cursorX, cursorY) {
-	movementAfterCursonDown = true;
+function mousemove(cursorX, cursorY) {
 	if(penTool.checked) {
 		if(paint)
 		{
@@ -69,115 +190,174 @@ function cursormove(cursorX, cursorY) {
 		}
 	}
 	if(lineTool.checked) {
-
+		if(lineStarted) {
+			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
+			redraw();
+		}
 	}
 	if(circleTool.checked) {
+		if(circleStarted) {
+			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
+			redraw();
+		}
+	}
+	if(firstCursorDown){
+		movementAfterCursonDown = true;
+	}	
+}
 
+function mouseup(cursorX, cursorY) {
+	if(penTool.checked){
+		paint = false;
+		penMidst = false;
+	}
+	if(lineTool.checked) {
+		if(movementAfterCursonDown){
+			// Draw line now and reset
+			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
+			resetTools();
+		}
+	}
+	if(circleTool.checked) {
+		if(movementAfterCursonDown){
+			// Draw circle now and reset
+			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
+			addCircle(circleStartingPointX, circleStartingPointY, radius);
+			resetTools();
+		}
 	}
 }
 
-function cursordown(cursorX, cursorY) {
-	movementAfterCursonDown = false; 
+function mouseleave(cursorX, cursorY) {
+	if(penTool.checked){
+		paint = false;
+		penMidst = false;
+	}
+	if(lineTool.checked) {
+		// Reset everything
+		resetTools();
+	}	
+	if(circleTool.checked) {
+		// Reset everything
+		resetTools();
+	}
+}
 
+
+function touchstart(cursorX, cursorY) {
+	firstCursorDown = true;
 	if(penTool.checked) {
 		if(document.getElementById("autoLinkMin").value < 0.5) {
 			document.getElementById("autoLinkMin").value = "1";
 			alert("Autolink max distance too small (< 0.5) \nIt has been reseted to 1.");
 		}
-
 		paint = true;
 		addClick(cursorX, cursorY);
 		penMidst = true;
 		redraw();
 	}
+	// lineTool and circleTool
 	if(lineTool.checked) {
-		if(lineStarted == false) {
-			lineStartingPointX = cursorX;
-			lineStartingPointY = cursorY;
-			lineStarted = true;
-		} else {
-			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
-			lineStarted = false;
+		// Start a new line 
+		lineStarted = true;
+		lineStartingPointX = cursorX;
+		lineStartingPointY = cursorY;
+		updateMarker(cursorX, cursorY);
+	}
+	if(circleTool.checked) {	
+		circleStarted = true;
+		circleStartingPointX = cursorX;
+		circleStartingPointY = cursorY;
+		updateMarker(cursorX, cursorY);
+	}
+	movementAfterCursonDown = false;
+}
+
+function touchmove(cursorX, cursorY) {
+	if(penTool.checked) {
+		if(paint)
+		{
+			addClick(cursorX, cursorY, true);
+			redraw();
+		}
+	}
+	if(lineTool.checked) {
+		if(lineStarted) {
+			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
+			redraw();
 		}
 	}
 	if(circleTool.checked) {	
-		if(circleStarted == false) {
-			circleStartingPointX = cursorX;
-			circleStartingPointY = cursorY;
-			circleStarted = true;
-		} else {
-			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
-			addCircle(circleStartingPointX, circleStartingPointY, radius);
-			circleStarted = false;
+		if(circleStarted) {
+			// If the circle has started, regardless of whether there's been an mouseup, still display the preview line.
+			redraw();
 		}
+	}
+	if(firstCursorDown){
+		movementAfterCursonDown = true;
 	}
 }
 
-function cursorup(cursorX, cursorY) {
+function touchend() {
 	if(penTool.checked){
 		paint = false;
 		penMidst = false;
 	}
 	if(lineTool.checked) {
-		if ((lineStarted == true) && (distance(lineStartingPointX, lineStartingPointY, cursorX, cursorY) > 10) && (movementAfterCursonDown == true)) {
-			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
-			lineStarted = false;
+		if(movementAfterCursonDown){
+			// Draw line
+			addLine(lineStartingPointX, lineStartingPointY, currentX, currentY);
 		}
+		resetTools();
 	}
 	if(circleTool.checked) {
-		if ((circleStarted == true) && (distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY) > 10) && (movementAfterCursonDown == true)) {
-			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
+		if(movementAfterCursonDown){
+			// Draw circle
+			var radius = distance(circleStartingPointX, circleStartingPointY, currentX, currentY);
 			addCircle(circleStartingPointX, circleStartingPointY, radius);
-			circleStarted = false;
 		}
+		resetTools();
 	}
 }
 
-function cursorleave(cursorX, cursorY) {
-	if(penTool.checked){
-		paint = false;
-		penMidst = false;
-	}
-	if(lineTool.checked) {
-		lineStarted = false;  
-	}	
-	if(circleTool.checked) {
-		circleStarted = false;
-	}
-}
+
 // General Cursor Functions end
 
 // Desktop mouse support
 $('#zCanvas').mousemove(function(e) {
 	var mouseX = e.pageX - this.offsetLeft;
 	var mouseY = e.pageY - this.offsetTop;
+	updateCurrent(mouseX, mouseY);
 
 	console.log("mousemove");
-	cursormove(mouseX, mouseY);
+	mousemove(mouseX, mouseY);
 });
 
 $('#zCanvas').mousedown(function(e){
 	var mouseX = e.pageX - this.offsetLeft;
 	var mouseY = e.pageY - this.offsetTop;
+	updateCurrent(mouseX, mouseY);
 	
 	console.log("mousedown");
-	cursordown(mouseX, mouseY);
+	mousedown(mouseX, mouseY);
 });
 
 $('#zCanvas').mouseup(function(e) {
 	var mouseX = e.pageX - this.offsetLeft;
 	var mouseY = e.pageY - this.offsetTop;
+	updateCurrent(mouseX, mouseY);
 
 	console.log("mouseup");
-	cursorup(mouseX, mouseY);
+	mouseup(mouseX, mouseY);
 });
 
 $('#zCanvas').mouseleave(function(e) {
 	var mouseX = e.pageX - this.offsetLeft;
 	var mouseY = e.pageY - this.offsetTop;
+	updateCurrent(mouseX, mouseY);
 
 	console.log("mouseleave");
-	cursorleave(mouseX, mouseY);
+	mouseleave(mouseX, mouseY);
 });
 // Desktop mouse support end
 
@@ -187,9 +367,10 @@ $('#zCanvas').on('touchmove', function(e) {
 	e.preventDefault();
 	touchX = e.originalEvent.touches[0].pageX - this.offsetLeft;
 	touchY = e.originalEvent.touches[0].pageY - this.offsetTop;
+	updateCurrent(touchX, touchY);
 
 	console.log("touchmove");
-	cursormove(touchX, touchY);
+	touchmove(touchX, touchY);
 }
 );
 
@@ -197,9 +378,10 @@ $('#zCanvas').on('touchstart', function(e) {
 	e.preventDefault();
 	var touchX = e.originalEvent.touches[0].pageX - this.offsetLeft;
 	var touchY = e.originalEvent.touches[0].pageY - this.offsetTop;
+	updateCurrent(touchX, touchY);
 
 	console.log("touchstart");
-	cursordown(touchX, touchY);
+	touchstart(touchX, touchY);
 }
 );
 
@@ -208,18 +390,15 @@ $('#zCanvas').on('touchend', function(e) {
 	// It seems that touch data cannot be retrieved when touch ends?
 
 	console.log("touchend");
-	cursorup(touchX, touchY);
+	touchend();
 }
 );
 
 $('#zCanvas').on('touchcancel', function(e) {
 	e.preventDefault();
-	
-	var touchX = e.originalEvent.touches[0].pageX - this.offsetLeft;
-	var touchY = e.originalEvent.touches[0].pageY - this.offsetTop;
 
 	console.log("touchcancel");
-	cursorleave(touchX, touchY);
+	touchcancel();
 }
 );
 // Mobile touch support end
@@ -261,9 +440,9 @@ function addLine(x1, y1, x2, y2) {
 
 function addCircle(x, y, r){
 	var circumference = 2 * Math.PI * r;
-	var n = circumference / document.getElementById("autoLinkMin").value/2;
+	var n = circumference / document.getElementById("autoLinkMin").value /1.15;
 	addClick(x + r, y);
-	lineMidst = true;
+	penMidst = true;
 	for(var i = 0; i < n; i++){
 		var angle = i * 2 * Math.PI / n;
 		var x0 = x + r * Math.cos(angle + 2 * Math.PI / n);
@@ -272,7 +451,7 @@ function addCircle(x, y, r){
 		
 	}
 	addClick(x + r, y);
-	lineMidst = false;
+	penMidst = false;
 	redraw();
 }
 
@@ -772,7 +951,7 @@ function redraw()
 	//
 	zContext.lineJoin = "round";
 	zContext.lineWidth = STROKEWIDTH;
-			
+
 	for(var i=0; i < clickX.length; i++) 
 	{
 		zContext.strokeStyle = clickColor[i];
@@ -789,6 +968,31 @@ function redraw()
 		zContext.closePath();
 		zContext.stroke();
 	}
+
+	// Marker
+	zContext.drawImage(markerSprite, markerX, markerY, markerWidth, markerHeight);
+
+	// Line previsualize
+	if(lineTool.checked) {
+		if(lineStarted && movementAfterCursonDown) {
+			zContext.strokeStyle = STROKECOLOR;
+			zContext.beginPath();
+			zContext.moveTo(lineStartingPointX, lineStartingPointY);
+			zContext.lineTo(currentX, currentY);
+			zContext.closePath();
+			zContext.stroke();
+		}
+	}
+
+	// Circle previsualize
+	if(circleTool.checked && circleStarted) {
+		zContext.strokeStyle = STROKECOLOR;
+		zContext.beginPath();
+		zContext.arc(circleStartingPointX, circleStartingPointY, distance(circleStartingPointX, circleStartingPointY, currentX, currentY), 0, 2 * Math.PI);
+		zContext.closePath();
+		zContext.stroke();
+	}
+
 	// do the mapping
 	wMap();
 }
