@@ -18,8 +18,8 @@ document.getElementById("mapping").value = "z";
 var zCanvasDiv = document.getElementById('zPlaneDiv');
 var zCanvas = document.createElement('canvas');
 if(window.innerWidth > 1000){		
-	var canvasMaxHeight1 = window.innerHeight*0.7;
-	var canvasMaxHeight2 = window.innerHeight-195;
+	var canvasMaxHeight1 = window.innerHeight*0.75;
+	var canvasMaxHeight2 = window.innerHeight-195;	
 	var canvasMaxHeight = Math.min(canvasMaxHeight1,canvasMaxHeight2);
 } else {
 	var canvasMaxHeight = window.innerHeight-100;
@@ -231,6 +231,23 @@ function addLine(x1, y1, x2, y2) {
 	redraw();
 }
 
+function addCircle(x, y, r){
+	var circumference = 2 * Math.PI * r;
+	var n = circumference / document.getElementById("autoLinkMin").value/2;
+	addClick(x + r, y);
+	lineMidst = true;
+	for(var i = 0; i < n; i++){
+		var angle = i * 2 * Math.PI / n;
+		var x0 = x + r * Math.cos(angle + 2 * Math.PI / n);
+		var y0 = y + r * Math.sin(angle + 2 * Math.PI / n);
+		addClick(x0, y0);
+		
+	}
+	addClick(x + r, y);
+	lineMidst = false;
+	redraw();
+}
+
 function distance(x1,y1,x2,y2)
 {
 	return Math.sqrt(Math.pow((y2-y1),2) + Math.pow((x2-x1),2));
@@ -427,8 +444,8 @@ function drawGrid(){
 	addLine(x1, y1, x2, y2);
 
 	// Reusing above code but flip x and y coordinates
-	// Blue
-	STROKECOLOR = "#3FA7D6";
+	// Yellow
+	STROKECOLOR = "#FAC05E";
 	x1 = FRAMESIZE / 4;
 	y1 = FRAMESIZE / 4;
 	x2 = FRAMESIZE * 3 / 4;
@@ -440,8 +457,8 @@ function drawGrid(){
 	y2 = FRAMESIZE * 3 / 8;
 	addLine(y1, x1, y2, x2);
 
-	// Yellow
-	STROKECOLOR = "#FAC05E";
+	// Blue
+	STROKECOLOR = "#3FA7D6";
 	x1 = FRAMESIZE / 4;
 	y1 = FRAMESIZE * 5 / 8;
 	x2 = FRAMESIZE * 3 / 4;
@@ -493,8 +510,8 @@ function drawAltGrid(){
 	addLine(x1, y1, x2, y2);
 
 	// Reusing above code but flip x and y coordinates
-	// Blue
-	STROKECOLOR = "#3FA7D6";
+	// Yellow
+	STROKECOLOR = "#FAC05E";
 	x1 = FRAMESIZE / 4;
 	y1 = FRAMESIZE * 5 / 16;
 	x2 = FRAMESIZE * 3 / 4;
@@ -506,8 +523,8 @@ function drawAltGrid(){
 	y2 = FRAMESIZE * 7 / 16;
 	addLine(y1, x1, y2, x2);
 
-	// Yellow
-	STROKECOLOR = "#FAC05E";
+	// Blue
+	STROKECOLOR = "#3FA7D6";
 	x1 = FRAMESIZE / 4;
 	y1 = FRAMESIZE * 9 / 16;
 	x2 = FRAMESIZE * 3 / 4;
@@ -519,6 +536,42 @@ function drawAltGrid(){
 	y2 = FRAMESIZE * 11 / 16;
 	addLine(y1, x1, y2, x2);
 
+	STROKECOLOR = originalStrokeColor;
+}
+
+function drawPolar(){
+	originalStrokeColor = STROKECOLOR;
+
+	// Black
+	STROKECOLOR = "#808080";
+	addCircle(FRAMESIZE/2,FRAMESIZE/2,FRAMESIZE/8);
+	STROKECOLOR = "#000000";
+	addCircle(FRAMESIZE/2,FRAMESIZE/2,FRAMESIZE*2/8);
+
+	// Beware the sine angles are flipped due to the canvas coordinate system
+	// Red
+	STROKECOLOR = "#EE6352";
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*0/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*0/6)));
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*1/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*1/6)));
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*2/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*2/6)));
+
+	// Yellow
+	STROKECOLOR = "#FAC05E";
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*3/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*3/6)));
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*4/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*4/6)));
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*5/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*5/6)));
+
+	// Green
+	STROKECOLOR = "#59CD90";
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*6/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*6/6)));
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*7/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*7/6)));
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*8/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*8/6)));
+
+	// Blue
+	STROKECOLOR = "#3FA7D6";
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*9/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*9/6)));
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*10/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*10/6)));
+	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*11/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*11/6)));
 	STROKECOLOR = originalStrokeColor;
 }
 

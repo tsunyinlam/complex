@@ -6,6 +6,10 @@ header {
 body {
     font-family: 'Helvetica', sans-serif;
     font-size: 16px;
+    @media only screen and (max-width: 1000px) {
+        margin: 0;
+        margin-right: 8px;
+    }
   }
 
 text, h1, h2, h3 {
@@ -115,6 +119,7 @@ textarea {
     margin-top: 50px;
     flex-shrink: 0;
     @media only screen and (max-width: 1000px) {
+        margin: 5px;
         margin-top: 10px;
     }
 }
@@ -139,6 +144,7 @@ input[type=radio]
     display: inline-block;
     flex-shrink: 0;
     @media only screen and (max-width: 1000px) {
+        margin: 5px;
         margin-top: 10px;
     }
 }
