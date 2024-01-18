@@ -47,18 +47,19 @@
 					<button onclick="drawPolar()"> Draw <br> Polar</button> <br> <br>
 					Color <br>
 					<input class="jscolor" onchange="updateColor(this.jscolor)" value="c74440" name="brush color" id="brushColor" size=5> <br> <br>
-					<button onclick="clearCanvas()">Clear <br> Canvas</button> <br>
+					<button onclick="undo()">Undo</button> <br> <br>
+					<button onclick="clearCanvas()">Clear <br> Canvas</button> 
 				</div>
-				<div id="zPlaneDiv"><h3>Left Plane</h3> </div>	
+				<div id="zPlaneDiv"><h3>Left Plane</h3> </div>
 				<div id="middleDiv">
 					Φ: (x,y) → (u,v) <br>
 					<label for="real">u(x,y,t) = </label><input type=text name="u(x,y,t)" id=real size=5i value="x"><br>
 					<label for="imag">v(x,y,t) = </label><input type=text name="v(x,y,t)" id=imag size=5i value="y"><br> 
 					<button onclick="setPhiMap()">Set Φ Map</button>  <br>  <br>
-					f: ℂ → ℂ <br>
-					<label for="mapping">f(z,t) = </label><input type=text name ="f(z,t)" id=mapping size=6i value="z"><br>
+					<label for="mapping">f: ℂ → ℂ; f(z,t) = </label>
+					<input type=text name ="f(z,t)" id=mapping size=12i value="z"><br>
 					<button onclick="setFMap()">Set f Map</button> <br> <br>
-					t is a real constant <br>
+					t is a real param. <br>
 					<label for="time">t = </label><input type=text id=time name = "value for time" size=5i value ="0"><br><br>
 					Animate <select id="animate-function">
 						<option value="real">Φ</option>
@@ -67,7 +68,7 @@
 					from <label for="initialTime">t=</label><input type=text id=initialTime name="intial time of animation" size=1i value="0"> 
 					to <label for="endTime">t=</label><input type=text name="end time of animation" id=endTime size=1i value="1"><br>
 					<label for="elapseTime">in >≈ </label><input type=text id=elapseTime name="approximate duration of animation" size=3i value="1"> seconds <br>
-					<button onclick="playAnimation()"> Play Animation </button>
+					<button onclick="playAnimation()"> Play </button> <button onclick="stopAnimationCall()"> Stop and Reset </button>
 					<br><br>
 					<button id="settingsButton">Settings</button>
 					<div id="settings" class="settings">
@@ -77,8 +78,10 @@
 							Points with distance lower than this will be linked <br>
 							<b> Animation: </b> <br> 
 							Frames per seconds: <input type=text id=fps size=1i value="24">
-							<b>Range Settings:</b>
-							<br>
+							<b> Grid Settings:</b> <br>
+							<button onclick="toggleLabels()">Toggle axis numbers</button> <br>
+							Axis numbers only work for default ranges <br>
+							<b>Range Settings:</b> <br>
 							Left Plane:<br>
 							<input type="text" id="ZMINX" value="-2" size=2> ≤ x ≤  <input type="text" id="ZMAXX" value="2" size=2><br>
 							<input type="text" id="ZMINY" value="-2" size=2> ≤ y ≤  <input type="text" id="ZMAXY" value="2" size=2><br>
@@ -105,7 +108,9 @@
 			</div>
 		</div>
 		<script type="text/javascript" src="js/script.js"></script>
-		<script type="text/javascript" src="js/box.js"></script>
+		<script type="text/javascript" src="js/additionalDrawingTools.js"></script>
+		<script type="text/javascript" src="js/settings.js"></script>
+		<script type="text/javascript" src="js/miscActions.js"></script>
 	</body>
 
 	<footer>

@@ -9,9 +9,11 @@ var W_MIN_Y = -2;
 var STROKEWIDTH = 5;
 var AXISWIDTH = 1;
 var BRANCH_CUT_THRESHHOLD = 10;
-//
+
 var STROKECOLOR = "#c74440";
-//
+
+var labelsShow = true;
+
 document.getElementById("mapping").value = "z";
 
 // Left Plane Canvas
@@ -25,15 +27,36 @@ if(window.innerWidth > 1000){
 	var canvasMaxHeight = window.innerHeight-100;
 }
 
-var FRAMESIZE = Math.round(Math.min(canvasMaxHeight,zCanvasDiv.clientWidth));
-zCanvas.setAttribute('width', FRAMESIZE);
-zCanvas.setAttribute('height', FRAMESIZE);
+const scale = window.devicePixelRatio; 
+var styleFrameSize = Math.round(Math.min(canvasMaxHeight,zCanvasDiv.clientWidth));
+var frameSize = Math.floor(styleFrameSize * scale);
+
+zCanvas.setAttribute('width',frameSize);
+zCanvas.setAttribute('height',frameSize);
+zCanvas.setAttribute('style', 'width: ' + styleFrameSize + 'px; height: ' + styleFrameSize + 'px;');
 zCanvas.setAttribute('id', 'zCanvas');
+
 zCanvasDiv.appendChild(zCanvas);
 if(typeof G_vmlCanvasManager != 'undefined') {
 	zCanvas = G_vmlCanvasManager.initElement(zCanvas);
 }
+
 var zContext = zCanvas.getContext("2d");	
+
+// w plane canvas
+var wCanvasDiv = document.getElementById('wPlaneDiv');
+
+wCanvas = document.createElement('canvas');
+wCanvas.setAttribute('width',frameSize);
+wCanvas.setAttribute('height',frameSize);
+wCanvas.setAttribute('style', 'width: ' + styleFrameSize + 'px; height: ' + styleFrameSize + 'px;');
+wCanvas.setAttribute('id', 'wCanvas');
+
+wCanvasDiv.appendChild(wCanvas);
+if(typeof G_vmlCanvasManager != 'undefined') {
+	wCanvas = G_vmlCanvasManager.initElement(wCanvas);
+}
+var wContext = wCanvas.getContext("2d");	
 
 // Left Plane Data
 var clickX = new Array();
@@ -41,40 +64,45 @@ var clickY = new Array();
 var clickColor = new Array();
 var clickDrag = new Array();
 
+var undoTracker = new Array();
+undoTracker.push(0);
+
 var currentX = 0;
 var currentY = 0;
 
 // Genearl Cursor Variables
-
-// Drawing variables
-var paint;
-var penMidst = false;
-var lineMidst = false;
-
-
 var firstCursorDown = false;
 // true if and only if there's been one mousemove followed by a mousedown post reset
 // Updates at the end of mousedown / mousemove
 var movementAfterCursonDown = false;
 
+// Pen Tool
+var paint;
+var penMidst = false;
+var lineMidst = false;
+var penTool = document.getElementById("penTool");
+
+// Line Tool
 // Toggle truth variable for mousedown
 // Updates at the end of mousedown / mousemove
 var lineStarted = false;
-var circleStarted = false;
-
-var penTool = document.getElementById("penTool");
 var lineTool = document.getElementById("lineTool");
-var circleTool = document.getElementById("circleTool");
-
 var lineStartingPointX = 0; 
 var lineStartingPointY = 0;
+
+// Circle Tool
+// Toggle truth variable for mousedown
+// Updates at the end of mousedown / mousemove
+var circleStarted = false;
+var circleTool = document.getElementById("circleTool");
 var circleStartingPointX = 0;
 var circleStartingPointY = 0;
 
+// Marker for Line and Circle Tool
 var markerSprite = new Image();
 markerSprite.src = "marker.webp";
-var markerWidth = 12;
-var markerHeight = 20;
+var markerWidth = 12 * scale;
+var markerHeight = 20 * scale;
 var markerX = -markerWidth;
 var markerY = -markerHeight;
 
@@ -111,7 +139,12 @@ function resetTools(){
 	redraw();
 }
 
+// Mouse Event Handlers
 function mousedown(cursorX, cursorY) {
+	if(clickX.length != undoTracker[undoTracker.length-1]){
+		undoTracker.push(clickX.length);
+	}
+	console.log(undoTracker);
 	firstCursorDown = true;
 	if(penTool.checked) {
 		if(document.getElementById("autoLinkMin").value < 0.5) {
@@ -180,7 +213,6 @@ function mousedown(cursorX, cursorY) {
 	movementAfterCursonDown = false;
 }
 
-// General Cursor Functions
 function mousemove(cursorX, cursorY) {
 	if(penTool.checked) {
 		if(paint)
@@ -243,8 +275,11 @@ function mouseleave(cursorX, cursorY) {
 	}
 }
 
-
+// Touch Event Handlers
 function touchstart(cursorX, cursorY) {
+	if(clickX.length != undoTracker[undoTracker.length-1]){
+		undoTracker.push(clickX.length);
+	}
 	firstCursorDown = true;
 	if(penTool.checked) {
 		if(document.getElementById("autoLinkMin").value < 0.5) {
@@ -320,22 +355,18 @@ function touchend() {
 	}
 }
 
-
-// General Cursor Functions end
-
-// Desktop mouse support
+// Mouse Event Listeners
 $('#zCanvas').mousemove(function(e) {
-	var mouseX = e.pageX - this.offsetLeft;
-	var mouseY = e.pageY - this.offsetTop;
+	var mouseX = (e.pageX - this.offsetLeft) * scale;
+	var mouseY = (e.pageY - this.offsetTop) * scale;
 	updateCurrent(mouseX, mouseY);
-
 	console.log("mousemove");
 	mousemove(mouseX, mouseY);
 });
 
 $('#zCanvas').mousedown(function(e){
-	var mouseX = e.pageX - this.offsetLeft;
-	var mouseY = e.pageY - this.offsetTop;
+	var mouseX = (e.pageX - this.offsetLeft) * scale;
+	var mouseY = (e.pageY - this.offsetTop) * scale;
 	updateCurrent(mouseX, mouseY);
 	
 	console.log("mousedown");
@@ -343,8 +374,8 @@ $('#zCanvas').mousedown(function(e){
 });
 
 $('#zCanvas').mouseup(function(e) {
-	var mouseX = e.pageX - this.offsetLeft;
-	var mouseY = e.pageY - this.offsetTop;
+	var mouseX = (e.pageX - this.offsetLeft) * scale;
+	var mouseY = (e.pageY - this.offsetTop) * scale;
 	updateCurrent(mouseX, mouseY);
 
 	console.log("mouseup");
@@ -352,21 +383,19 @@ $('#zCanvas').mouseup(function(e) {
 });
 
 $('#zCanvas').mouseleave(function(e) {
-	var mouseX = e.pageX - this.offsetLeft;
-	var mouseY = e.pageY - this.offsetTop;
+	var mouseX = (e.pageX - this.offsetLeft) * scale;
+	var mouseY = (e.pageY - this.offsetTop) * scale;
 	updateCurrent(mouseX, mouseY);
 
 	console.log("mouseleave");
 	mouseleave(mouseX, mouseY);
 });
-// Desktop mouse support end
 
-
-// Mobile touch support (all by Copilot!!)
+// Touch Event Listeners
 $('#zCanvas').on('touchmove', function(e) {	
 	e.preventDefault();
-	touchX = e.originalEvent.touches[0].pageX - this.offsetLeft;
-	touchY = e.originalEvent.touches[0].pageY - this.offsetTop;
+	touchX = (e.originalEvent.touches[0].pageX - this.offsetLeft) * scale;
+	touchY = (e.originalEvent.touches[0].pageY - this.offsetTop) * scale;;
 	updateCurrent(touchX, touchY);
 
 	console.log("touchmove");
@@ -376,8 +405,8 @@ $('#zCanvas').on('touchmove', function(e) {
 
 $('#zCanvas').on('touchstart', function(e) {
 	e.preventDefault();
-	var touchX = e.originalEvent.touches[0].pageX - this.offsetLeft;
-	var touchY = e.originalEvent.touches[0].pageY - this.offsetTop;
+	touchX = (e.originalEvent.touches[0].pageX - this.offsetLeft) * scale;
+	touchY = (e.originalEvent.touches[0].pageY - this.offsetTop) * scale;;
 	updateCurrent(touchX, touchY);
 
 	console.log("touchstart");
@@ -401,13 +430,14 @@ $('#zCanvas').on('touchcancel', function(e) {
 	touchcancel();
 }
 );
-// Mobile touch support end
 
+// Helpful Functions
+function distance(x1,y1,x2,y2)
+{
+	return Math.sqrt(Math.pow((y2-y1),2) + Math.pow((x2-x1),2));
+}
 
-var f = function(z){
-	return z;
-};
-
+// Adding vertices to the left plane
 function addClick(x, y, dragging)
 {
 	var clickXPrevious = clickX[clickX.length-1];
@@ -455,15 +485,10 @@ function addCircle(x, y, r){
 	redraw();
 }
 
-function distance(x1,y1,x2,y2)
-{
-	return Math.sqrt(Math.pow((y2-y1),2) + Math.pow((x2-x1),2));
-}
-
-function updateColor(jscolor)
-{
-	STROKECOLOR = "#" + jscolor;
-}
+// Function Plotting
+var f = function(z){
+	return z;
+};
 
 function parse2DFunctions(func)
 {
@@ -520,12 +545,36 @@ function setFMap() {
 	}
 }
 
+function mapUpdate(map)
+{
+	console.log("Mapping " + map );
+	var funk = Complex.parseFunction(map,['z']);
+	f = function(z){
+		return funk(z);
+	};
+	wMap();
+}
+
+// Animation code
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+var animationStarted = false;
+var animationRunning = false;
+var stopAnimation = false;
 async function playAnimation()
 {
+	if(animationStarted || animationRunning){
+		stopAnimationCall();
+		while(true){
+			await sleep(40);
+			if(!stopAnimation){
+				break;
+			}
+		}
+	}
+	animationStarted = true;
 	// Process time settings
 	startTime = new Date();
 	
@@ -554,381 +603,59 @@ async function playAnimation()
 
 	finalMapCheck(t_map);
 
+	animationRunning=true;
+	animationStarted=false;
+
 	try{
 		for (let index = 0; index <= frames; index++) {
 			var time = parseFloat(initialTime) + parseFloat(index)*parseFloat(timeInterval);
 			var map = parseTime(t_map, time);
 			mapUpdate(map);
-
 			await sleep(1000*delay);
-			} 
-		endTime = new Date();
-		var timeDiff = endTime - startTime;
-		timeDiff /= 1000;
-		console.log("Animation took " + timeDiff + " seconds");
-	}
-	catch (err){
-		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
-	}
-}
-
-function mapUpdate(map)
-{
-	console.log("Mapping " + map );
-	var funk = Complex.parseFunction(map,['z']);
-	f = function(z){
-		return funk(z);
-	};
-	wMap();
-}
-
-function addUrlParameters(url, id, value) {
-	var newUrl = url;
-	if(url.includes("?")){
-		newUrl += "&" + id + "=" + value;
-	} else {
-		newUrl += "?" + id + "=" + value;
-	}
-	return newUrl;
-}
-
-function shareGraph(){
-	var inputs, index;
-	var url = "https://tobylam.xyz/plotter/";
-
-	inputs = document.getElementsByTagName('input');
-	for (index = 0; index < inputs.length; ++index) {
-		if(inputs[index].type != "radio"){	
-			if ((inputs[index].value != inputs[index].defaultValue)) { 
-				if (inputs[index].id != "brushColor") {
-					url = addUrlParameters(url, inputs[index].id, inputs[index].value);
-				}
+			if(stopAnimation){
+				break;
 			}
+		} 
+		if(stopAnimation){
+			console.log("Animation stopped in midst");
+		} else {
+			endTime = new Date();
+			var timeDiff = endTime - startTime;
+			timeDiff /= 1000;
+			console.log("Animation took " + timeDiff + " seconds");
 		}
 	}
-
-	url = addUrlParameters(url, "animate-function", document.getElementById("animate-function").value);
-	url = addUrlParameters(url, "clipboard", document.getElementById("clipboard").value);	
-
-	navigator.clipboard.writeText(url);
-	alert("Link copied!");
+	catch (err){
+		animationRunning = false;
+		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
+	}
+	animationRunning = false;
 }
 
-function randomize(){
-	clearCanvas();
-	drawPolar();
-	document.getElementById("mapping").value = "1/(z+" + Math.round(Math.random() * 20 - 10)/10 + "+" + Math.round(Math.random() * 20 - 10)/10 + "*i)";
-	setFMap();
-	STROKECOLOR = originalStrokeColor;
-}
-
-function drawGrid(){
-	originalStrokeColor = STROKECOLOR;
-	// Red
-	STROKECOLOR = "#EE6352";
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE / 4;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE / 4;
-	addLine(x1, y1, x2, y2);
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 3 / 8;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 3 / 8;
-	addLine(x1, y1, x2, y2);
-
-	// Green
-	STROKECOLOR = "#59CD90";
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 5 / 8;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 5 / 8;
-	addLine(x1, y1, x2, y2);
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 3 / 4;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 3 / 4;
-	addLine(x1, y1, x2, y2);
-
-	// Reusing above code but flip x and y coordinates
-	// Yellow
-	STROKECOLOR = "#FAC05E";
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE / 4;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE / 4;
-	addLine(y1, x1, y2, x2);
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 3 / 8;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 3 / 8;
-	addLine(y1, x1, y2, x2);
-
-	// Blue
-	STROKECOLOR = "#3FA7D6";
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 5 / 8;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 5 / 8;
-	addLine(y1, x1, y2, x2);
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 3 / 4;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 3 / 4;
-	addLine(y1, x1, y2, x2);
-
-	// Black
-	STROKECOLOR = "#000000";
-	x1 = FRAMESIZE * 1/4;
-	y1 = FRAMESIZE / 2;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE / 2;
-	addLine(y1, x1, y2, x2);
-	addLine(x1, y1, x2, y2);
-	STROKECOLOR = originalStrokeColor;
-}
-
-function drawAltGrid(){
-	originalStrokeColor = STROKECOLOR;
-	// Red
-	STROKECOLOR = "#EE6352";
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 5 / 16;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 5 / 16;
-	addLine(x1, y1, x2, y2);
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 7 / 16;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 7 / 16;
-	addLine(x1, y1, x2, y2);
-
-	// Green
-	STROKECOLOR = "#59CD90";
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 9 / 16;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 9 / 16;
-	addLine(x1, y1, x2, y2);
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 11 / 16;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 11 / 16;
-	addLine(x1, y1, x2, y2);
-
-	// Reusing above code but flip x and y coordinates
-	// Yellow
-	STROKECOLOR = "#FAC05E";
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 5 / 16;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 5 / 16;
-	addLine(y1, x1, y2, x2);
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 7 / 16;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 7 / 16;
-	addLine(y1, x1, y2, x2);
-
-	// Blue
-	STROKECOLOR = "#3FA7D6";
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 9 / 16;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 9 / 16;
-	addLine(y1, x1, y2, x2);
-	x1 = FRAMESIZE / 4;
-	y1 = FRAMESIZE * 11 / 16;
-	x2 = FRAMESIZE * 3 / 4;
-	y2 = FRAMESIZE * 11 / 16;
-	addLine(y1, x1, y2, x2);
-
-	STROKECOLOR = originalStrokeColor;
-}
-
-function drawPolar(){
-	originalStrokeColor = STROKECOLOR;
-
-	// Black
-	STROKECOLOR = "#808080";
-	addCircle(FRAMESIZE/2,FRAMESIZE/2,FRAMESIZE/8);
-	STROKECOLOR = "#000000";
-	addCircle(FRAMESIZE/2,FRAMESIZE/2,FRAMESIZE*2/8);
-
-	// Beware the sine angles are flipped due to the canvas coordinate system
-	// Red
-	STROKECOLOR = "#EE6352";
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*0/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*0/6)));
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*1/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*1/6)));
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*2/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*2/6)));
-
-	// Yellow
-	STROKECOLOR = "#FAC05E";
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*3/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*3/6)));
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*4/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*4/6)));
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*5/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*5/6)));
-
-	// Green
-	STROKECOLOR = "#59CD90";
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*6/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*6/6)));
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*7/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*7/6)));
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*8/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*8/6)));
-
-	// Blue
-	STROKECOLOR = "#3FA7D6";
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*9/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*9/6)));
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*10/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*10/6)));
-	addLine(FRAMESIZE/2,FRAMESIZE/2,(FRAMESIZE/2)+(FRAMESIZE/4*Math.cos(Math.PI*11/6)),(FRAMESIZE/2)-(FRAMESIZE/4*Math.sin(Math.PI*11/6)));
-	STROKECOLOR = originalStrokeColor;
-}
-
-// w plane canvas
-var wCanvasDiv = document.getElementById('wPlaneDiv');
-wCanvas = document.createElement('canvas');
-wCanvas.setAttribute('width', FRAMESIZE);
-wCanvas.setAttribute('height', FRAMESIZE);
-wCanvas.setAttribute('id', 'wCanvas');
-wCanvasDiv.appendChild(wCanvas);
-if(typeof G_vmlCanvasManager != 'undefined') {
-	wCanvas = G_vmlCanvasManager.initElement(wCanvas);
-}
-var wContext = wCanvas.getContext("2d");	
-
-function clearCanvas()
-{
-	clickX = [];
-	clickY = [];
-	clickDrag = [];
-	clickColor = [];
-	redraw();
-}
-
-function updateBCT()
-{
-	var newBCT = parseFloat(document.getElementById("bct").value);
-	if(!isNaN(newBCT) && newBCT > 1)
-	{
-		BRANCH_CUT_THRESHHOLD = newBCT;
-		document.getElementById("bct").value = newBCT;
+async function stopAnimationCall(){
+	if(animationRunning) {
+		stopAnimation = true;
+		while(true){
+			await sleep(40);
+			if(!animationRunning){
+				break;
+			}
+		}
+		stopAnimation = false;
+		var initialTime =parseFloat(document.getElementById("initialTime").value);
+		if (document.getElementById("animate-function").value == "real") {
+			var u = document.getElementById("real").value;
+			var v = document.getElementById("imag").value;
+			var u_parsed = parse2DFunctions(u);
+			var v_parsed = parse2DFunctions(v);
+			var t_map = combineMap(u_parsed,v_parsed);}
+		else{
+			var f = document.getElementById("mapping").value;
+			var t_map = f;
+		}
+		var map = parseTime(t_map, initialTime);
+		mapUpdate(map);
 	}
-	else
-	{
-		document.getElementById("bct").value = 10;
-	}
-	redraw();
-}
-
-function resetBCT()
-{
-	BRANCH_CUT_THRESHHOLD = 10;
-	document.getElementById("bct").value = 10;
-	redraw();
-}
-
-function resetRange()
-{
-	document.getElementById("ZMAXX").value = 2;
-	document.getElementById("ZMINX").value = -2;
-	document.getElementById("ZMAXY").value = 2;
-	document.getElementById("ZMINY").value = -2;
-	document.getElementById("WMAXX").value = 2;
-	document.getElementById("WMINX").value = -2;
-	document.getElementById("WMAXY").value = 2;
-	document.getElementById("WMINY").value = -2;
-	Z_MAX_X = 2;
-	Z_MIN_X = -2;
-	Z_MAX_Y = 2;
-	Z_MIN_Y = -2;
-	W_MAX_X = 2;
-	W_MIN_X = -2;
-	W_MAX_Y = 2;
-	W_MIN_Y = -2;
-	redraw();
-}
-
-function updateRange()
-{
-	var zmaxx = parseFloat(document.getElementById("ZMAXX").value);
-	var zminx = parseFloat(document.getElementById("ZMINX").value);
-	var zmaxy = parseFloat(document.getElementById("ZMAXY").value);
-	var zminy = parseFloat(document.getElementById("ZMINY").value);
-	var wmaxx = parseFloat(document.getElementById("WMAXX").value);
-	var wminx = parseFloat(document.getElementById("WMINX").value);
-	var wmaxy = parseFloat(document.getElementById("WMAXY").value);
-	var wminy = parseFloat(document.getElementById("WMINY").value);
-	if(!isNaN(zmaxx))
-	{
-		document.getElementById("ZMAXX").value = zmaxx;
-		Z_MAX_X = zmaxx;
-	}
-	else
-	{
-		document.getElementById("ZMAXX").value = 2;
-	}
-	if(!isNaN(zminx))
-	{
-		document.getElementById("ZMINX").value = zminx;
-		Z_MIN_X = zminx;
-	}
-	else
-	{
-		document.getElementById("ZMINX").value = -2;
-	}
-	if(!isNaN(zmaxy))
-	{
-		document.getElementById("ZMAXY").value = zmaxy;
-		Z_MAX_Y = zmaxy;
-	}
-	else
-	{
-		document.getElementById("ZMAXY").value = 2;
-	}
-	if(!isNaN(zminy))
-	{
-		document.getElementById("ZMINY").value = zminy;
-		Z_MIN_Y = zminy;
-	}
-	else
-	{
-		document.getElementById("ZMINY").value = -2;
-	}
-	if(!isNaN(wmaxx))
-	{
-		document.getElementById("WMAXX").value = wmaxx;
-		W_MAX_X = wmaxx;
-	}
-	else
-	{
-		document.getElementById("WMAXX").value = 2;
-	}
-	if(!isNaN(wminx))
-	{
-		document.getElementById("WMINX").value = wminx;
-		W_MIN_X = wminx;
-	}
-	else
-	{
-		document.getElementById("WMINX").value = -2;
-	}
-	if(!isNaN(wmaxy))
-	{
-		document.getElementById("WMAXY").value = wmaxy;
-		W_MAX_Y = wmaxy;
-	}
-	else
-	{
-		document.getElementById("WMAXY").value = 2;
-	}
-	if(!isNaN(wminy))
-	{
-		document.getElementById("WMINY").value = wminy;
-		W_MIN_Y = wminy;
-	}
-	else
-	{
-		document.getElementById("WMINY").value = -2;
-	}
-	redraw();
 }
 
 function redraw()
@@ -948,7 +675,47 @@ function redraw()
 	zContext.lineTo(zCanvas.width/2,zCanvas.height);
 	zContext.closePath();
 	zContext.stroke();
-	//
+	
+	// labels
+	if(Z_MAX_X == 2 & Z_MIN_X == -2 & Z_MAX_Y == 2 & Z_MIN_Y == -2 & labelsShow){
+		zContext.lineWidth = AXISWIDTH*2;
+
+		zContext.font = "30px Arial";
+		zContext.textAlign = "right";
+		zContext.fillText("0", zCanvas.width/2 - 5, zCanvas.width/2 + 35);
+		
+		zContext.textAlign = "center";
+		zContext.fillText("1", zCanvas.width*3/4, zCanvas.width/2 + 35);
+		zContext.beginPath();
+		zContext.moveTo(zCanvas.width*3/4,zCanvas.width/2+5);
+		zContext.lineTo(zCanvas.width*3/4,zCanvas.width/2-5);
+		zContext.closePath();
+		zContext.stroke();
+
+		zContext.fillText("1", zCanvas.width*1/4, zCanvas.width/2 + 35);
+		zContext.fillText("-", zCanvas.width*1/4-12, zCanvas.width/2 + 35);
+		zContext.beginPath();
+		zContext.moveTo(zCanvas.width*1/4,zCanvas.width/2+5);
+		zContext.lineTo(zCanvas.width*1/4,zCanvas.width/2-5);
+		zContext.closePath();
+		zContext.stroke();
+
+		zContext.fillText("1", zCanvas.width/2-20, zCanvas.width*1/4+10);
+		zContext.beginPath();
+		zContext.moveTo(zCanvas.width/2+5, zCanvas.width*1/4);
+		zContext.lineTo(zCanvas.width/2-5, zCanvas.width*1/4);
+		zContext.closePath();
+		zContext.stroke();
+
+		zContext.fillText("1", zCanvas.width/2-20, zCanvas.width*3/4+10);
+		zContext.fillText("-", zCanvas.width/2-32, zCanvas.width*3/4+10);
+		zContext.beginPath();
+		zContext.moveTo(zCanvas.width/2+5, zCanvas.width*3/4);
+		zContext.lineTo(zCanvas.width/2-5, zCanvas.width*3/4);
+		zContext.closePath();
+		zContext.stroke();
+	}
+
 	zContext.lineJoin = "round";
 	zContext.lineWidth = STROKEWIDTH;
 
@@ -1014,6 +781,47 @@ function wMap()
 	wContext.lineTo(wCanvas.width/2,wCanvas.height);
 	wContext.closePath();
 	wContext.stroke();
+
+	//label
+	if(W_MAX_X == 2 & W_MIN_X == -2 & W_MAX_Y == 2 & W_MIN_Y == -2 & labelsShow){
+		wContext.lineWidth = AXISWIDTH*2;
+
+		wContext.font = "30px Arial";
+		wContext.textAlign = "right";
+		wContext.fillText("0", wCanvas.width/2 - 5, wCanvas.width/2 + 35);
+		
+		wContext.textAlign = "center";
+		wContext.fillText("1", wCanvas.width*3/4, wCanvas.width/2 + 35);
+		wContext.beginPath();
+		wContext.moveTo(wCanvas.width*3/4,wCanvas.width/2+5);
+		wContext.lineTo(wCanvas.width*3/4,wCanvas.width/2-5);
+		wContext.closePath();
+		wContext.stroke();
+
+		wContext.fillText("1", wCanvas.width*1/4, wCanvas.width/2 + 35);
+		wContext.fillText("-", wCanvas.width*1/4-12, wCanvas.width/2 + 35);
+		wContext.beginPath();
+		wContext.moveTo(wCanvas.width*1/4,wCanvas.width/2+5);
+		wContext.lineTo(wCanvas.width*1/4,wCanvas.width/2-5);
+		wContext.closePath();
+		wContext.stroke();
+
+		wContext.fillText("1", wCanvas.width/2-20, wCanvas.width*1/4+10);
+		wContext.beginPath();
+		wContext.moveTo(wCanvas.width/2+5, wCanvas.width*1/4);
+		wContext.lineTo(wCanvas.width/2-5, wCanvas.width*1/4);
+		wContext.closePath();
+		wContext.stroke();
+
+		wContext.fillText("1", wCanvas.width/2-20, wCanvas.width*3/4+10);
+		wContext.fillText("-", wCanvas.width/2-32, wCanvas.width*3/4+10);
+		wContext.beginPath();
+		wContext.moveTo(wCanvas.width/2+5, wCanvas.width*3/4);
+		wContext.lineTo(wCanvas.width/2-5, wCanvas.width*3/4);
+		wContext.closePath();
+		wContext.stroke();
+	}
+
 	//
 	var zplane = zContext.getImageData(0,0,zCanvas.width,zCanvas.height);
 	var data = zplane.data;
@@ -1064,4 +872,6 @@ function wMap()
 		prevy = out_y;
 	}
 }
+
+// Redraw the canvas to initialize
 redraw();
