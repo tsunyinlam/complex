@@ -89,6 +89,7 @@ var lineStarted = false;
 var lineTool = document.getElementById("lineTool");
 var lineStartingPointX = 0; 
 var lineStartingPointY = 0;
+var lineStartingClick = 0;
 
 // Circle Tool
 // Toggle truth variable for mousedown
@@ -97,6 +98,7 @@ var circleStarted = false;
 var circleTool = document.getElementById("circleTool");
 var circleStartingPointX = 0;
 var circleStartingPointY = 0;
+var circleStartingClick = 0;
 
 // Marker for Line and Circle Tool
 var markerSprite = new Image();
@@ -144,7 +146,6 @@ function mousedown(cursorX, cursorY) {
 	if(clickX.length != undoTracker[undoTracker.length-1]){
 		undoTracker.push(clickX.length);
 	}
-	console.log(undoTracker);
 	firstCursorDown = true;
 	if(penTool.checked) {
 		if(document.getElementById("autoLinkMin").value < 0.5) {
@@ -173,14 +174,14 @@ function mousedown(cursorX, cursorY) {
 				lineStarted = true;
 				lineStartingPointX = cursorX;
 				lineStartingPointY = cursorY;
-				updateMarker(lineStartingPointX, lineStartingPointY);
+				lineStartingClick = clickX.length;
 			}
 		} else {
 			// Start a new line 
 			lineStarted = true;
 			lineStartingPointX = cursorX;
 			lineStartingPointY = cursorY;
-			updateMarker(cursorX, cursorY);
+			lineStartingClick = clickX.length;
 		}
 	}
 	if(circleTool.checked) {	
@@ -201,6 +202,7 @@ function mousedown(cursorX, cursorY) {
 				circleStartingPointX = cursorX;
 				circleStartingPointY = cursorY;
 				updateMarker(circleStartingPointX, circleStartingPointY);
+				circleStartingClick = clickX.length;
 			}
 		} else {
 			// Start a new circle 
@@ -208,6 +210,7 @@ function mousedown(cursorX, cursorY) {
 			circleStartingPointX = cursorX;
 			circleStartingPointY = cursorY;
 			updateMarker(cursorX, cursorY);
+			circleStartingClick = clickX.length;
 		}
 	}
 	movementAfterCursonDown = false;
@@ -224,12 +227,23 @@ function mousemove(cursorX, cursorY) {
 	if(lineTool.checked) {
 		if(lineStarted) {
 			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
+			clickX = clickX.splice(0, lineStartingClick);
+			clickY = clickY.splice(0,  lineStartingClick);
+			clickColor = clickColor.splice(0, lineStartingClick);
+			clickDrag = clickDrag.splice(0,  lineStartingClick);
+			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
 			redraw();
 		}
 	}
 	if(circleTool.checked) {
 		if(circleStarted) {
 			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
+			clickX = clickX.splice(0, circleStartingClick);
+			clickY = clickY.splice(0,  circleStartingClick);
+			clickColor = clickColor.splice(0, circleStartingClick);
+			clickDrag = clickDrag.splice(0,  circleStartingClick);
+			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
+			addCircle(circleStartingPointX, circleStartingPointY, radius);
 			redraw();
 		}
 	}
@@ -297,13 +311,14 @@ function touchstart(cursorX, cursorY) {
 		lineStarted = true;
 		lineStartingPointX = cursorX;
 		lineStartingPointY = cursorY;
-		updateMarker(cursorX, cursorY);
+		lineStartingClick = clickX.length;
 	}
 	if(circleTool.checked) {	
 		circleStarted = true;
 		circleStartingPointX = cursorX;
 		circleStartingPointY = cursorY;
 		updateMarker(cursorX, cursorY);
+		circleStartingClick = clickX.length;
 	}
 	movementAfterCursonDown = false;
 }
@@ -319,12 +334,23 @@ function touchmove(cursorX, cursorY) {
 	if(lineTool.checked) {
 		if(lineStarted) {
 			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
+			clickX = clickX.splice(0, lineStartingClick);
+			clickY = clickY.splice(0,  lineStartingClick);
+			clickColor = clickColor.splice(0, lineStartingClick);
+			clickDrag = clickDrag.splice(0,  lineStartingClick);
+			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
 			redraw();
 		}
 	}
 	if(circleTool.checked) {	
 		if(circleStarted) {
 			// If the circle has started, regardless of whether there's been an mouseup, still display the preview line.
+			clickX = clickX.splice(0, circleStartingClick);
+			clickY = clickY.splice(0,  circleStartingClick);
+			clickColor = clickColor.splice(0, circleStartingClick);
+			clickDrag = clickDrag.splice(0,  circleStartingClick);
+			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
+			addCircle(circleStartingPointX, circleStartingPointY, radius);
 			redraw();
 		}
 	}
@@ -576,7 +602,6 @@ async function playAnimation()
 	}
 	animationStarted = true;
 	// Process time settings
-	startTime = new Date();
 	
 	var initialTime =parseFloat(document.getElementById("initialTime").value);
 	var endTime = parseFloat(document.getElementById("endTime").value);
@@ -606,12 +631,17 @@ async function playAnimation()
 	animationRunning=true;
 	animationStarted=false;
 
+	startTime = new Date();
+
 	try{
 		for (let index = 0; index <= frames; index++) {
 			var time = parseFloat(initialTime) + parseFloat(index)*parseFloat(timeInterval);
 			var map = parseTime(t_map, time);
 			mapUpdate(map);
-			await sleep(1000*delay);
+			var frameEndTime = new Date();
+			if(frameEndTime - startTime < 1000 * elapseTime * index / frames){
+				await sleep(1000 * elapseTime * index / frames - (frameEndTime - startTime));
+			}
 			if(stopAnimation){
 				break;
 			}

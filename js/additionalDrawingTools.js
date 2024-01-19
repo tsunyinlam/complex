@@ -169,11 +169,13 @@ function clearCanvas()
 	clickY = [];
 	clickDrag = [];
 	clickColor = [];
+	undoTracker = [0];
 	redraw();
 }
 
 function undo()
 {
+	console.log(undoTracker);
 	var undoTrackerLastElement = undoTracker[undoTracker.length - 1] ;
 	clickX = clickX.splice(0, undoTrackerLastElement);
 	clickY = clickY.splice(0,  undoTrackerLastElement);
