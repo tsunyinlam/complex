@@ -47,8 +47,10 @@ var zContext = zCanvas.getContext("2d");
 var wCanvasDiv = document.getElementById('wPlaneDiv');
 
 wCanvas = document.createElement('canvas');
-wCanvas.setAttribute('width',frameSize);
-wCanvas.setAttribute('height',frameSize);
+var wCanvasWidth = frameSize;
+var wCanvasHeight = frameSize;
+wCanvas.setAttribute('width',wCanvasWidth);
+wCanvas.setAttribute('height',wCanvasHeight);
 wCanvas.setAttribute('style', 'width: ' + styleFrameSize + 'px; height: ' + styleFrameSize + 'px;');
 wCanvas.setAttribute('id', 'wCanvas');
 
@@ -65,7 +67,6 @@ var clickColor = new Array();
 var clickDrag = new Array();
 
 var undoTracker = new Array();
-undoTracker.push(0);
 
 var currentX = 0;
 var currentY = 0;
@@ -108,6 +109,11 @@ var markerHeight = 20 * scale;
 var markerX = -markerWidth;
 var markerY = -markerHeight;
 
+// Global variables for additional drawing tools 
+var drawnGrid = false;
+var drawnAltGrid = false;
+var drawnPolar = false;
+
 function updateCurrent(x, y) {
 	currentX = x;
 	currentY = y;
@@ -124,6 +130,34 @@ function hideMarker(){
 	markerY = -markerHeight;
 	redraw();
 }
+
+function popClick(start) {
+	var length = clickX.length;
+	for (var i = 0; i < length - start; i++) {
+		clickX.pop();
+		clickY.pop();
+		clickColor.pop();
+		clickDrag.pop();
+	}
+}
+
+function previewUpdate(){
+	if(lineStarted){
+		// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
+		popClick(lineStartingClick);
+		addLine(lineStartingPointX, lineStartingPointY, currentX, currentY);
+		redraw();
+	}
+	if(circleStarted) {
+		// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
+		popClick(circleStartingClick);
+		var radius = distance(circleStartingPointX, circleStartingPointY, currentX, currentY);
+		addCircle(circleStartingPointX, circleStartingPointY, radius);
+		redraw();
+	}
+}
+
+setInterval(previewUpdate, 16.7);
 
 function resetTools(){
 	firstCursorDown = false; 	
@@ -224,29 +258,6 @@ function mousemove(cursorX, cursorY) {
 			redraw();
 		}
 	}
-	if(lineTool.checked) {
-		if(lineStarted) {
-			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
-			clickX = clickX.splice(0, lineStartingClick);
-			clickY = clickY.splice(0,  lineStartingClick);
-			clickColor = clickColor.splice(0, lineStartingClick);
-			clickDrag = clickDrag.splice(0,  lineStartingClick);
-			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
-			redraw();
-		}
-	}
-	if(circleTool.checked) {
-		if(circleStarted) {
-			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
-			clickX = clickX.splice(0, circleStartingClick);
-			clickY = clickY.splice(0,  circleStartingClick);
-			clickColor = clickColor.splice(0, circleStartingClick);
-			clickDrag = clickDrag.splice(0,  circleStartingClick);
-			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
-			addCircle(circleStartingPointX, circleStartingPointY, radius);
-			redraw();
-		}
-	}
 	if(firstCursorDown){
 		movementAfterCursonDown = true;
 	}	
@@ -260,6 +271,7 @@ function mouseup(cursorX, cursorY) {
 	if(lineTool.checked) {
 		if(movementAfterCursonDown){
 			// Draw line now and reset
+			previewUpdate();
 			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
 			resetTools();
 		}
@@ -267,6 +279,7 @@ function mouseup(cursorX, cursorY) {
 	if(circleTool.checked) {
 		if(movementAfterCursonDown){
 			// Draw circle now and reset
+			previewUpdate();
 			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
 			addCircle(circleStartingPointX, circleStartingPointY, radius);
 			resetTools();
@@ -328,29 +341,6 @@ function touchmove(cursorX, cursorY) {
 		if(paint)
 		{
 			addClick(cursorX, cursorY, true);
-			redraw();
-		}
-	}
-	if(lineTool.checked) {
-		if(lineStarted) {
-			// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
-			clickX = clickX.splice(0, lineStartingClick);
-			clickY = clickY.splice(0,  lineStartingClick);
-			clickColor = clickColor.splice(0, lineStartingClick);
-			clickDrag = clickDrag.splice(0,  lineStartingClick);
-			addLine(lineStartingPointX, lineStartingPointY, cursorX, cursorY);
-			redraw();
-		}
-	}
-	if(circleTool.checked) {	
-		if(circleStarted) {
-			// If the circle has started, regardless of whether there's been an mouseup, still display the preview line.
-			clickX = clickX.splice(0, circleStartingClick);
-			clickY = clickY.splice(0,  circleStartingClick);
-			clickColor = clickColor.splice(0, circleStartingClick);
-			clickDrag = clickDrag.splice(0,  circleStartingClick);
-			var radius = distance(circleStartingPointX, circleStartingPointY, cursorX, cursorY);
-			addCircle(circleStartingPointX, circleStartingPointY, radius);
 			redraw();
 		}
 	}
@@ -490,8 +480,7 @@ function addLine(x1, y1, x2, y2) {
 	lineMidst = true;
 	addClick(x2, y2);
 	lineMidst = false;
-
-	redraw();
+	
 }
 
 function addCircle(x, y, r){
@@ -508,7 +497,7 @@ function addCircle(x, y, r){
 	}
 	addClick(x + r, y);
 	penMidst = false;
-	redraw();
+
 }
 
 // Function Plotting
@@ -688,6 +677,9 @@ async function stopAnimationCall(){
 	}
 }
 
+var zplane = zContext.getImageData(0,0,zCanvas.width,zCanvas.height);
+var data = zplane.data;
+
 function redraw()
 {
 	zContext.clearRect(0, 0, zContext.canvas.width, zContext.canvas.height); // Clears the zCanvas
@@ -708,153 +700,108 @@ function redraw()
 	
 	// labels
 	if(Z_MAX_X == 2 & Z_MIN_X == -2 & Z_MAX_Y == 2 & Z_MIN_Y == -2 & labelsShow){
-		zContext.lineWidth = AXISWIDTH*2;
-
-		zContext.font = "30px Arial";
-		zContext.textAlign = "right";
-		zContext.fillText("0", zCanvas.width/2 - 5, zCanvas.width/2 + 35);
-		
-		zContext.textAlign = "center";
-		zContext.fillText("1", zCanvas.width*3/4, zCanvas.width/2 + 35);
-		zContext.beginPath();
-		zContext.moveTo(zCanvas.width*3/4,zCanvas.width/2+5);
-		zContext.lineTo(zCanvas.width*3/4,zCanvas.width/2-5);
-		zContext.closePath();
-		zContext.stroke();
-
-		zContext.fillText("1", zCanvas.width*1/4, zCanvas.width/2 + 35);
-		zContext.fillText("-", zCanvas.width*1/4-12, zCanvas.width/2 + 35);
-		zContext.beginPath();
-		zContext.moveTo(zCanvas.width*1/4,zCanvas.width/2+5);
-		zContext.lineTo(zCanvas.width*1/4,zCanvas.width/2-5);
-		zContext.closePath();
-		zContext.stroke();
-
-		zContext.fillText("1", zCanvas.width/2-20, zCanvas.width*1/4+10);
-		zContext.beginPath();
-		zContext.moveTo(zCanvas.width/2+5, zCanvas.width*1/4);
-		zContext.lineTo(zCanvas.width/2-5, zCanvas.width*1/4);
-		zContext.closePath();
-		zContext.stroke();
-
-		zContext.fillText("1", zCanvas.width/2-20, zCanvas.width*3/4+10);
-		zContext.fillText("-", zCanvas.width/2-32, zCanvas.width*3/4+10);
-		zContext.beginPath();
-		zContext.moveTo(zCanvas.width/2+5, zCanvas.width*3/4);
-		zContext.lineTo(zCanvas.width/2-5, zCanvas.width*3/4);
-		zContext.closePath();
-		zContext.stroke();
+		zContextLabels();
 	}
 
 	zContext.lineJoin = "round";
 	zContext.lineWidth = STROKEWIDTH;
-
+	
 	for(var i=0; i < clickX.length; i++) 
 	{
-		zContext.strokeStyle = clickColor[i];
-		zContext.beginPath();
-		if(clickDrag[i] && i)
-		{
-			zContext.moveTo(clickX[i-1], clickY[i-1]);
-		}
-		else
-		{
-			zContext.moveTo(clickX[i]-1, clickY[i]);
-		}
-		zContext.lineTo(clickX[i], clickY[i]);
-		zContext.closePath();
-		zContext.stroke();
-	}
-
-	// Marker
-	zContext.drawImage(markerSprite, markerX, markerY, markerWidth, markerHeight);
-
-	// Line previsualize
-	if(lineTool.checked) {
-		if(lineStarted && movementAfterCursonDown) {
-			zContext.strokeStyle = STROKECOLOR;
+		if(i==0){
+			// If it's the first point, just draw a "point"
 			zContext.beginPath();
-			zContext.moveTo(lineStartingPointX, lineStartingPointY);
-			zContext.lineTo(currentX, currentY);
-			zContext.closePath();
+			zContext.moveTo(clickX[i]-1, clickY[i]);
+			zContext.lineTo(clickX[i], clickY[i]);
+			zContext.strokeStyle = clickColor[0];
 			zContext.stroke();
+		} else if (!clickDrag[i]) {
+			// Apparently clickDrag is false if the point is at an end point of an line, and true otherwise. Not sure why this is the case.
+			// End line and start a new line
+			if(clickColor[i] != clickColor[i-1]){
+				zContext.strokeStyle = clickColor[i];
+			}
+			zContext.stroke();
+			zContext.moveTo(clickX[i], clickY[i]);
+			zContext.beginPath();
+		} else {
+			// Continue a line
+			if(clickColor[i] != clickColor[i-1]){
+				zContext.strokeStyle = clickColor[i];
+			}
+			zContext.lineTo(clickX[i], clickY[i]);
 		}
 	}
 
-	// Circle previsualize
-	if(circleTool.checked && circleStarted) {
-		zContext.strokeStyle = STROKECOLOR;
-		zContext.beginPath();
-		zContext.arc(circleStartingPointX, circleStartingPointY, distance(circleStartingPointX, circleStartingPointY, currentX, currentY), 0, 2 * Math.PI);
-		zContext.closePath();
-		zContext.stroke();
-	}
+	// Finish the path if there's a line in progress
+	zContext.stroke();
 
 	// do the mapping
 	wMap();
 }
 
+function zContextLabels(){
+	zContext.lineWidth = AXISWIDTH*2;
+
+	zContext.font = "30px Arial";
+	zContext.textAlign = "right";
+	zContext.fillText("0", zCanvas.width/2 - 5, zCanvas.width/2 + 35);
+	
+	zContext.textAlign = "center";
+	zContext.fillText("1", zCanvas.width*3/4, zCanvas.width/2 + 35);
+	zContext.beginPath();
+	zContext.moveTo(zCanvas.width*3/4,zCanvas.width/2+5);
+	zContext.lineTo(zCanvas.width*3/4,zCanvas.width/2-5);
+	zContext.closePath();
+	zContext.stroke();
+
+	zContext.fillText("1", zCanvas.width*1/4, zCanvas.width/2 + 35);
+	zContext.fillText("-", zCanvas.width*1/4-12, zCanvas.width/2 + 35);
+	zContext.beginPath();
+	zContext.moveTo(zCanvas.width*1/4,zCanvas.width/2+5);
+	zContext.lineTo(zCanvas.width*1/4,zCanvas.width/2-5);
+	zContext.closePath();
+	zContext.stroke();
+
+	zContext.fillText("1", zCanvas.width/2-20, zCanvas.width*1/4+10);
+	zContext.beginPath();
+	zContext.moveTo(zCanvas.width/2+5, zCanvas.width*1/4);
+	zContext.lineTo(zCanvas.width/2-5, zCanvas.width*1/4);
+	zContext.closePath();
+	zContext.stroke();
+
+	zContext.fillText("1", zCanvas.width/2-20, zCanvas.width*3/4+10);
+	zContext.fillText("-", zCanvas.width/2-32, zCanvas.width*3/4+10);
+	zContext.beginPath();
+	zContext.moveTo(zCanvas.width/2+5, zCanvas.width*3/4);
+	zContext.lineTo(zCanvas.width/2-5, zCanvas.width*3/4);
+	zContext.closePath();
+	zContext.stroke();
+}
+
 function wMap()
 {
-	wContext.clearRect(0,0,wCanvas.width,wCanvas.height);
+	wContext.clearRect(0,0,wCanvasWidth,wCanvasHeight);
 	wContext.lineWidth = AXISWIDTH;
 	wContext.strokeStyle = "#000000";
 	//axes
 	wContext.beginPath();
-	wContext.moveTo(0,wCanvas.height/2);
-	wContext.lineTo(wCanvas.width,wCanvas.height/2);
+	wContext.moveTo(0,wCanvasHeight/2);
+	wContext.lineTo(wCanvasWidth,wCanvasHeight/2);
 	wContext.closePath();
 	wContext.stroke();
 	// other axis
 	wContext.beginPath();
-	wContext.moveTo(wCanvas.width/2,0);
-	wContext.lineTo(wCanvas.width/2,wCanvas.height);
+	wContext.moveTo(wCanvasWidth/2,0);
+	wContext.lineTo(wCanvasWidth/2,wCanvasHeight);
 	wContext.closePath();
 	wContext.stroke();
 
-	//label
+	//labels
 	if(W_MAX_X == 2 & W_MIN_X == -2 & W_MAX_Y == 2 & W_MIN_Y == -2 & labelsShow){
-		wContext.lineWidth = AXISWIDTH*2;
-
-		wContext.font = "30px Arial";
-		wContext.textAlign = "right";
-		wContext.fillText("0", wCanvas.width/2 - 5, wCanvas.width/2 + 35);
-		
-		wContext.textAlign = "center";
-		wContext.fillText("1", wCanvas.width*3/4, wCanvas.width/2 + 35);
-		wContext.beginPath();
-		wContext.moveTo(wCanvas.width*3/4,wCanvas.width/2+5);
-		wContext.lineTo(wCanvas.width*3/4,wCanvas.width/2-5);
-		wContext.closePath();
-		wContext.stroke();
-
-		wContext.fillText("1", wCanvas.width*1/4, wCanvas.width/2 + 35);
-		wContext.fillText("-", wCanvas.width*1/4-12, wCanvas.width/2 + 35);
-		wContext.beginPath();
-		wContext.moveTo(wCanvas.width*1/4,wCanvas.width/2+5);
-		wContext.lineTo(wCanvas.width*1/4,wCanvas.width/2-5);
-		wContext.closePath();
-		wContext.stroke();
-
-		wContext.fillText("1", wCanvas.width/2-20, wCanvas.width*1/4+10);
-		wContext.beginPath();
-		wContext.moveTo(wCanvas.width/2+5, wCanvas.width*1/4);
-		wContext.lineTo(wCanvas.width/2-5, wCanvas.width*1/4);
-		wContext.closePath();
-		wContext.stroke();
-
-		wContext.fillText("1", wCanvas.width/2-20, wCanvas.width*3/4+10);
-		wContext.fillText("-", wCanvas.width/2-32, wCanvas.width*3/4+10);
-		wContext.beginPath();
-		wContext.moveTo(wCanvas.width/2+5, wCanvas.width*3/4);
-		wContext.lineTo(wCanvas.width/2-5, wCanvas.width*3/4);
-		wContext.closePath();
-		wContext.stroke();
+		wContextLabels();
 	}
 
-	//
-	var zplane = zContext.getImageData(0,0,zCanvas.width,zCanvas.height);
-	var data = zplane.data;
 	var prevx = -1;
 	var prevy = -1;
 	
@@ -874,33 +821,76 @@ function wMap()
 		var out_re = out.real();
 		var out_im = out.imag();
 
-		var out_x = Math.round(((out_re - W_MIN_X)/(W_MAX_X - W_MIN_X))*wCanvas.width)
-		var out_y = Math.round((1-((out_im - W_MIN_Y)/(W_MAX_Y - W_MIN_Y)))*wCanvas.height)
+		var out_x = Math.round(((out_re - W_MIN_X)/(W_MAX_X - W_MIN_X))*wCanvasWidth)
+		var out_y = Math.round((1-((out_im - W_MIN_Y)/(W_MAX_Y - W_MIN_Y)))*wCanvasHeight)
 
 		wContext.lineWidth = STROKEWIDTH;
 		wContext.lineJoin = "round";
 		if(i != 0)
 		{
-			wContext.strokeStyle = clickColor[i];
-			wContext.beginPath();
-			if(clickDrag[i])
-			{
+			if(clickColor[i] != clickColor[i-1]){
+				wContext.strokeStyle = clickColor[i];
+			}
+			if(!clickDrag[i]){
+				// Refer to redraw() for more details
+				// End line and start a new line
+				wContext.stroke();
+				wContext.moveTo(out_x, out_y);
+				wContext.beginPath();
+			} else {
+				// Continue a line + some code inherited about branch cuts which I don't understand
 				if((distance(out_x,out_y,prevx,prevy)/distance(clickX[i-1],clickY[i-1],clickX[i],clickY[i]))<BRANCH_CUT_THRESHHOLD)
 					wContext.moveTo(prevx, prevy);
 				else
 					wContext.moveTo(out_x, out_y);
+				wContext.lineTo(out_x,out_y);
 			}
-			else
-			{
-				wContext.moveTo(out_x, out_y);
-			}
-			wContext.lineTo(out_x,out_y);
-			wContext.closePath();
-			wContext.stroke();
 		}
 		prevx = out_x;
 		prevy = out_y;
 	}
+
+	// Finish the path if there's a line in progress
+	wContext.stroke();
+}
+
+function wContextLabels(){
+	wContext.lineWidth = AXISWIDTH*2;
+
+	wContext.font = "30px Arial";
+	wContext.textAlign = "right";
+	wContext.fillText("0", wCanvasWidth/2 - 5, wCanvasWidth/2 + 35);
+	
+	wContext.textAlign = "center";
+	wContext.fillText("1", wCanvasWidth*3/4, wCanvasWidth/2 + 35);
+	wContext.beginPath();
+	wContext.moveTo(wCanvasWidth*3/4,wCanvasWidth/2+5);
+	wContext.lineTo(wCanvasWidth*3/4,wCanvasWidth/2-5);
+	wContext.closePath();
+	wContext.stroke();
+
+	wContext.fillText("1", wCanvasWidth*1/4, wCanvasWidth/2 + 35);
+	wContext.fillText("-", wCanvasWidth*1/4-12, wCanvasWidth/2 + 35);
+	wContext.beginPath();
+	wContext.moveTo(wCanvasWidth*1/4,wCanvasWidth/2+5);
+	wContext.lineTo(wCanvasWidth*1/4,wCanvasWidth/2-5);
+	wContext.closePath();
+	wContext.stroke();
+
+	wContext.fillText("1", wCanvasWidth/2-20, wCanvasWidth*1/4+10);
+	wContext.beginPath();
+	wContext.moveTo(wCanvasWidth/2+5, wCanvasWidth*1/4);
+	wContext.lineTo(wCanvasWidth/2-5, wCanvasWidth*1/4);
+	wContext.closePath();
+	wContext.stroke();
+
+	wContext.fillText("1", wCanvasWidth/2-20, wCanvasWidth*3/4+10);
+	wContext.fillText("-", wCanvasWidth/2-32, wCanvasWidth*3/4+10);
+	wContext.beginPath();
+	wContext.moveTo(wCanvasWidth/2+5, wCanvasWidth*3/4);
+	wContext.lineTo(wCanvasWidth/2-5, wCanvasWidth*3/4);
+	wContext.closePath();
+	wContext.stroke();
 }
 
 // Redraw the canvas to initialize

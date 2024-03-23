@@ -4,7 +4,17 @@ function updateColor(jscolor)
 }
 
 function drawGrid(){
+	if(drawnGrid == true){
+
+	} else {
+	if(clickX.length != undoTracker[undoTracker.length-1]){
+		undoTracker.push(clickX.length);
+	}
+	undoTracker.push("grid");
+	drawnGrid = true;
+
 	originalStrokeColor = STROKECOLOR;
+
 	// Red
 	STROKECOLOR = "#EE6352";
 	x1 = frameSize / 4;
@@ -67,9 +77,21 @@ function drawGrid(){
 	addLine(y1, x1, y2, x2);
 	addLine(x1, y1, x2, y2);
 	STROKECOLOR = originalStrokeColor;
+	}
+
+	redraw();
 }
 
 function drawAltGrid(){
+	if(drawnAltGrid == true){
+
+	} else {
+	if(clickX.length != undoTracker[undoTracker.length-1]){
+		undoTracker.push(clickX.length);
+	}
+	undoTracker.push("altGrid");
+	drawnAltGrid = true;
+
 	originalStrokeColor = STROKECOLOR;
 	// Red
 	STROKECOLOR = "#EE6352";
@@ -125,9 +147,21 @@ function drawAltGrid(){
 	addLine(y1, x1, y2, x2);
 
 	STROKECOLOR = originalStrokeColor;
+	}
+
+	redraw();
 }
 
 function drawPolar(){
+	if(drawnPolar == true){
+
+	} else {
+	if(clickX.length != undoTracker[undoTracker.length-1]){
+		undoTracker.push(clickX.length);
+	}
+	undoTracker.push("polar");
+	drawnPolar = true;
+
 	originalStrokeColor = STROKECOLOR;
 
 	// Black
@@ -161,6 +195,9 @@ function drawPolar(){
 	addLine(frameSize/2,frameSize/2,(frameSize/2)+(frameSize/4*Math.cos(Math.PI*10/6)),(frameSize/2)-(frameSize/4*Math.sin(Math.PI*10/6)));
 	addLine(frameSize/2,frameSize/2,(frameSize/2)+(frameSize/4*Math.cos(Math.PI*11/6)),(frameSize/2)-(frameSize/4*Math.sin(Math.PI*11/6)));
 	STROKECOLOR = originalStrokeColor;
+	}
+
+	redraw();
 }
 
 function clearCanvas()
@@ -169,14 +206,29 @@ function clearCanvas()
 	clickY = [];
 	clickDrag = [];
 	clickColor = [];
-	undoTracker = [0];
+	undoTracker = [];
+	drawnGrid = false;
+	drawnAltGrid = false;
+	drawnPolar = false;
 	redraw();
 }
 
 function undo()
 {
-	console.log(undoTracker);
 	var undoTrackerLastElement = undoTracker[undoTracker.length - 1] ;
+	if(undoTrackerLastElement == "grid"){
+		drawnGrid = false;
+		undoTracker.pop();
+		undoTrackerLastElement = undoTracker[undoTracker.length - 1];
+	} else if (undoTrackerLastElement == "altGrid"){
+		drawnAltGrid = false;
+		undoTracker.pop();
+		undoTrackerLastElement = undoTracker[undoTracker.length - 1];
+	} else if (undoTrackerLastElement == "polar"){
+		drawnPolar = false;
+		undoTracker.pop();
+		undoTrackerLastElement = undoTracker[undoTracker.length - 1];
+	}
 	clickX = clickX.splice(0, undoTrackerLastElement);
 	clickY = clickY.splice(0,  undoTrackerLastElement);
 	clickColor = clickColor.splice(0, undoTrackerLastElement);
