@@ -48,7 +48,8 @@
 					Color <br>
 					<input class="jscolor" onchange="updateColor(this.jscolor)" value="c74440" name="brush color" id="brushColor" size=5> <br> <br>
 					<button onclick="undo()">Undo</button> <br> <br>
-					<button onclick="clearCanvas()">Clear <br> Canvas</button> 
+					<button onclick="clearCanvas()">Clear <br> Canvas</button>  <br> <br>
+					<span id = "fps">  </span>
 				</div>
 				<div id="zPlaneDiv"><h3>Left Plane</h3> </div>
 				<div id="middleDiv">
@@ -68,16 +69,19 @@
 					from <label for="initialTime">t=</label><input type=text id=initialTime name="intial time of animation" size=1i value="0"> 
 					to <label for="endTime">t=</label><input type=text name="end time of animation" id=endTime size=1i value="1"><br>
 					<label for="elapseTime">in >≈ </label><input type=text id=elapseTime name="approximate duration of animation" size=3i value="1"> seconds <br>
-					<button onclick="playAnimation()"> Play </button> <button onclick="stopAnimationCall()"> Stop and Reset </button>
+					<button onclick="playAnimation()"> Play </button> <button onclick="animationReset()"> Stop and Reset </button>
 					<br><br>
 					<button id="settingsButton">Settings</button>
+
 					<div id="settings" class="settings">
 						<div class="settings-content">
 							<b> Autolink:</b> <br>
 							Max distance: <input type=text id="autoLinkMin" size=2i value ="5"> <br>
 							Points with distance lower than this will be linked <br>
+							<!-- 
 							<b> Animation: </b> <br> 
 							Frames per seconds: <input type=text id=fps size=1i value="24">
+							-->
 							<b> Grid Settings:</b> <br>
 							<button onclick="toggleLabels()">Toggle axis numbers</button> <br>
 							Axis numbers only work for default ranges <br>

@@ -122,13 +122,11 @@ function updateCurrent(x, y) {
 function updateMarker(x, y) {
 	markerX = x - markerWidth/2;
 	markerY = y - markerHeight;
-	redraw();
 }
 
 function hideMarker(){
 	markerX = -markerWidth;
 	markerY = -markerHeight;
-	redraw();
 }
 
 function popClick(start) {
@@ -141,23 +139,77 @@ function popClick(start) {
 	}
 }
 
+var animationStarted = false;
+var animationRunning = false;
+var animationStartedTime;
+var initialTime;
+var endTime;
+var elapseTime;
+var totalTimeInterval;
+var t_map;
+
 function previewUpdate(){
 	if(lineStarted){
 		// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
 		popClick(lineStartingClick);
 		addLine(lineStartingPointX, lineStartingPointY, currentX, currentY);
-		redraw();
 	}
 	if(circleStarted) {
 		// If the line has started, regardless of whether there's been an mouseup, still display the preview line.
 		popClick(circleStartingClick);
 		var radius = distance(circleStartingPointX, circleStartingPointY, currentX, currentY);
 		addCircle(circleStartingPointX, circleStartingPointY, radius);
-		redraw();
 	}
 }
 
-setInterval(previewUpdate, 16.7);
+function Update(){
+	var timeNow = new Date();
+	previewUpdate();
+	if(animationRunning){
+		// Progress from 0.00 to 1.00, describes the stage of animation we should be in now
+		var timeDiff = parseFloat(timeNow.getTime() - animationStartedTime.getTime());
+		var progress = parseFloat(timeDiff/elapseTime/1000);
+		// The time used for the map
+		var time = initialTime + progress * totalTimeInterval;
+		var map = parseTime(t_map, time);
+		try {
+			mapUpdate(map);
+		} catch(err) {
+			alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
+			stopAnimationCall();
+		}
+		if(time > endTime){
+			stopAnimationCall();
+		}
+	}
+	// Now try to redraw
+	redraw();
+}
+
+var framesThisSecond = 198;
+
+function animationUpdateLoop(){
+	Update();
+	window.setTimeout(animationUpdateLoop, 0);
+	framesThisSecond++;
+}
+
+function fpsUpdate(){
+	document.getElementById("fps").innerHTML = "fps: " + framesThisSecond;
+	framesThisSecond = 0;
+	window.setTimeout(fpsUpdate, 1000);
+}
+
+function stopAnimationCall(){
+	animationStarted = false;
+	animationRunning = false;
+}
+
+function animationReset(){
+	stopAnimationCall();
+	var map = parseTime(t_map, initialTime);
+	mapUpdate(map);
+}
 
 function resetTools(){
 	firstCursorDown = false; 	
@@ -172,7 +224,6 @@ function resetTools(){
 	circleStartingPointY = 0;
 	markerX = -markerWidth;
 	markerY = -markerHeight;
-	redraw();
 }
 
 // Mouse Event Handlers
@@ -189,7 +240,6 @@ function mousedown(cursorX, cursorY) {
 		paint = true;
 		addClick(cursorX, cursorY);
 		penMidst = true;
-		redraw();
 	}
 	// lineTool and circleTool
 	if(lineTool.checked) {
@@ -255,7 +305,6 @@ function mousemove(cursorX, cursorY) {
 		if(paint)
 		{
 			addClick(cursorX, cursorY, true);
-			redraw();
 		}
 	}
 	if(firstCursorDown){
@@ -316,7 +365,6 @@ function touchstart(cursorX, cursorY) {
 		paint = true;
 		addClick(cursorX, cursorY);
 		penMidst = true;
-		redraw();
 	}
 	// lineTool and circleTool
 	if(lineTool.checked) {
@@ -341,7 +389,6 @@ function touchmove(cursorX, cursorY) {
 		if(paint)
 		{
 			addClick(cursorX, cursorY, true);
-			redraw();
 		}
 	}
 	if(firstCursorDown){
@@ -357,6 +404,7 @@ function touchend() {
 	if(lineTool.checked) {
 		if(movementAfterCursonDown){
 			// Draw line
+			previewUpdate();
 			addLine(lineStartingPointX, lineStartingPointY, currentX, currentY);
 		}
 		resetTools();
@@ -364,6 +412,7 @@ function touchend() {
 	if(circleTool.checked) {
 		if(movementAfterCursonDown){
 			// Draw circle
+			previewUpdate();
 			var radius = distance(circleStartingPointX, circleStartingPointY, currentX, currentY);
 			addCircle(circleStartingPointX, circleStartingPointY, radius);
 		}
@@ -488,14 +537,13 @@ function addCircle(x, y, r){
 	var n = circumference / document.getElementById("autoLinkMin").value /1.15;
 	addClick(x + r, y);
 	penMidst = true;
-	for(var i = 0; i < n; i++){
+	// 2 more points than n to visually complete the circle
+	for(var i = 0; i < n+2; i++){
 		var angle = i * 2 * Math.PI / n;
 		var x0 = x + r * Math.cos(angle + 2 * Math.PI / n);
 		var y0 = y + r * Math.sin(angle + 2 * Math.PI / n);
 		addClick(x0, y0);
-		
 	}
-	addClick(x + r, y);
 	penMidst = false;
 
 }
@@ -567,7 +615,6 @@ function mapUpdate(map)
 	f = function(z){
 		return funk(z);
 	};
-	wMap();
 }
 
 // Animation code
@@ -575,33 +622,23 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-var animationStarted = false;
-var animationRunning = false;
-var stopAnimation = false;
-async function playAnimation()
+
+function playAnimation()
 {
 	if(animationStarted || animationRunning){
 		stopAnimationCall();
-		while(true){
-			await sleep(40);
-			if(!stopAnimation){
-				break;
-			}
-		}
+		playAnimation();
 	}
 	animationStarted = true;
+	animationStartedTime = new Date();
+
 	// Process time settings
-	
-	var initialTime =parseFloat(document.getElementById("initialTime").value);
-	var endTime = parseFloat(document.getElementById("endTime").value);
-	var totalTimeInterval = endTime - initialTime;
+	initialTime = parseFloat(document.getElementById("initialTime").value);
+	endTime = parseFloat(document.getElementById("endTime").value);
+	totalTimeInterval = endTime - initialTime;
 
-	var fps = parseFloat(document.getElementById("fps").value);
-	var elapseTime = parseFloat(document.getElementById("elapseTime").value);
-
-	var frames = fps * elapseTime;
-	timeInterval = totalTimeInterval / frames;
-	var delay = 1 / fps;
+	fps = parseFloat(document.getElementById("fps").value);
+	elapseTime = parseFloat(document.getElementById("elapseTime").value);
 
 	// Deal with the choice of which function to animate
 	if (document.getElementById("animate-function").value == "real") {
@@ -609,72 +646,16 @@ async function playAnimation()
 		var v = document.getElementById("imag").value;
 		var u_parsed = parse2DFunctions(u);
 		var v_parsed = parse2DFunctions(v);
-		var t_map = combineMap(u_parsed,v_parsed);}
+		t_map = combineMap(u_parsed,v_parsed);}
 	else{
 		var f = document.getElementById("mapping").value;
-		var t_map = f;
+		t_map = f;
 	}
 
 	finalMapCheck(t_map);
 
 	animationRunning=true;
 	animationStarted=false;
-
-	startTime = new Date();
-
-	try{
-		for (let index = 0; index <= frames; index++) {
-			var time = parseFloat(initialTime) + parseFloat(index)*parseFloat(timeInterval);
-			var map = parseTime(t_map, time);
-			mapUpdate(map);
-			var frameEndTime = new Date();
-			if(frameEndTime - startTime < 1000 * elapseTime * index / frames){
-				await sleep(1000 * elapseTime * index / frames - (frameEndTime - startTime));
-			}
-			if(stopAnimation){
-				break;
-			}
-		} 
-		if(stopAnimation){
-			console.log("Animation stopped in midst");
-		} else {
-			endTime = new Date();
-			var timeDiff = endTime - startTime;
-			timeDiff /= 1000;
-			console.log("Animation took " + timeDiff + " seconds");
-		}
-	}
-	catch (err){
-		animationRunning = false;
-		alert("Invalid Function \nMake sure to use * for multiplication between the variables t, x and y \nMake sure the other settings are valid numbers");
-	}
-	animationRunning = false;
-}
-
-async function stopAnimationCall(){
-	if(animationRunning) {
-		stopAnimation = true;
-		while(true){
-			await sleep(40);
-			if(!animationRunning){
-				break;
-			}
-		}
-		stopAnimation = false;
-		var initialTime =parseFloat(document.getElementById("initialTime").value);
-		if (document.getElementById("animate-function").value == "real") {
-			var u = document.getElementById("real").value;
-			var v = document.getElementById("imag").value;
-			var u_parsed = parse2DFunctions(u);
-			var v_parsed = parse2DFunctions(v);
-			var t_map = combineMap(u_parsed,v_parsed);}
-		else{
-			var f = document.getElementById("mapping").value;
-			var t_map = f;
-		}
-		var map = parseTime(t_map, initialTime);
-		mapUpdate(map);
-	}
 }
 
 var zplane = zContext.getImageData(0,0,zCanvas.width,zCanvas.height);
@@ -718,7 +699,7 @@ function redraw()
 		} else if (!clickDrag[i]) {
 			// Apparently clickDrag is false if the point is at an end point of an line, and true otherwise. Not sure why this is the case.
 			// End line and start a new line
-			zContext.stroke();
+			zContext.stroke(); 
 			// Color change is done this way to minimize number of times of changing strokeStyle which is computationally expensive
 			if(clickColor[i] != clickColor[i-1]){
 				zContext.strokeStyle = clickColor[i];
@@ -832,7 +813,7 @@ function wMap()
 		if(i != 0)
 		{
 			if(!clickDrag[i]){
-				// Refer to redraw() for more details
+				// Refer to redraw function for more details
 				// End line and start a new line
 				wContext.stroke();
 				if(clickColor[i] != clickColor[i-1]){
@@ -896,5 +877,7 @@ function wContextLabels(){
 	wContext.stroke();
 }
 
-// Redraw the canvas to initialize
+// Initliase and start animation
 redraw();
+animationUpdateLoop();
+fpsUpdate();

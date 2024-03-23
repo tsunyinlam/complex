@@ -8,11 +8,11 @@ Hosted on https://tobylam.xyz/plotter
 
 A fork of [mabokin's](https://github.com/mabotkin/complex) complex mapping visualizer. [Raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues) for any bugs / suggestions!
 
-![screenshot](https://tobylam.xyz/assets/images/2023-11-24-complex-plotter.webp)
+![screenshot](https://tobylam.xyz/assets/images/2023-11-24-screenshot.webp)
 
 # Documentation
 
-The visualizer webpage should work on all deskto / mobile browsers. 
+The visualizer webpage should work on all desktop / mobile browsers. 
 
 ## Basic Usage 
 - Write your f(z,t) or u(x,y,t) and v(x,y,t) in the textboxes (See below)
