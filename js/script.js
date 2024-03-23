@@ -718,10 +718,11 @@ function redraw()
 		} else if (!clickDrag[i]) {
 			// Apparently clickDrag is false if the point is at an end point of an line, and true otherwise. Not sure why this is the case.
 			// End line and start a new line
+			zContext.stroke();
+			// Color change is done this way to minimize number of times of changing strokeStyle which is computationally expensive
 			if(clickColor[i] != clickColor[i-1]){
 				zContext.strokeStyle = clickColor[i];
 			}
-			zContext.stroke();
 			zContext.moveTo(clickX[i], clickY[i]);
 			zContext.beginPath();
 		} else {
@@ -804,6 +805,10 @@ function wMap()
 
 	var prevx = -1;
 	var prevy = -1;
+
+	wContext.lineWidth = STROKEWIDTH;
+	wContext.lineJoin = "round";
+	wContext.strokeStyle = clickColor[0];
 	
 	for(var i = 0; i < clickDrag.length; i++)
 	{
@@ -824,19 +829,15 @@ function wMap()
 		var out_x = Math.round(((out_re - W_MIN_X)/(W_MAX_X - W_MIN_X))*wCanvasWidth)
 		var out_y = Math.round((1-((out_im - W_MIN_Y)/(W_MAX_Y - W_MIN_Y)))*wCanvasHeight)
 
-		wContext.lineWidth = STROKEWIDTH;
-		wContext.lineJoin = "round";
-		wContext.strokeStyle = clickColor[0];
-
 		if(i != 0)
 		{
-			if(clickColor[i] != clickColor[i-1]){
-				wContext.strokeStyle = clickColor[i];
-			}
 			if(!clickDrag[i]){
 				// Refer to redraw() for more details
 				// End line and start a new line
 				wContext.stroke();
+				if(clickColor[i] != clickColor[i-1]){
+					wContext.strokeStyle = clickColor[i];
+				}
 				wContext.moveTo(out_x, out_y);
 				wContext.beginPath();
 			} else {
