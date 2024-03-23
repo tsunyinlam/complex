@@ -705,7 +705,7 @@ function redraw()
 
 	zContext.lineJoin = "round";
 	zContext.lineWidth = STROKEWIDTH;
-	
+
 	for(var i=0; i < clickX.length; i++) 
 	{
 		if(i==0){
@@ -826,6 +826,8 @@ function wMap()
 
 		wContext.lineWidth = STROKEWIDTH;
 		wContext.lineJoin = "round";
+		wContext.strokeStyle = clickColor[0];
+
 		if(i != 0)
 		{
 			if(clickColor[i] != clickColor[i-1]){
