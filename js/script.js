@@ -58,7 +58,19 @@ wCanvasDiv.appendChild(wCanvas);
 if(typeof G_vmlCanvasManager != 'undefined') {
 	wCanvas = G_vmlCanvasManager.initElement(wCanvas);
 }
-var wContext = wCanvas.getContext("2d");	
+var wContext = wCanvas.getContext("2d");
+
+//offscreen canvas
+const osAxis = new OffscreenCanvas(frameSize, frameSize);
+const osAxisContext = osAxis.getContext("2d");
+const osAxisLabels = new OffscreenCanvas(frameSize, frameSize);
+const osAxisLabelsContext = osAxisLabels.getContext("2d");
+
+// To do: Implement offscreen canvas for zCanvas and wCanvas that takes account of undos
+// const osZCanvas = new OffscreenCanvas(frameSize, frameSize);
+// const osZCanvasContext = osZCanvas.getContext("2d");
+// const osWCanvas = new OffscreenCanvas(frameSize, frameSize);
+// const osWCanvasContext = osWCanvasContext.getContext("2d");
 
 // Left Plane Data
 var clickX = new Array();
@@ -505,6 +517,14 @@ function distance(x1,y1,x2,y2)
 // Adding vertices to the left plane
 function addClick(x, y, dragging)
 {
+	if(clickX.length == 0){
+		// Duplicate the first point
+		clickX.push(x);
+		clickY.push(y);
+		clickColor.push(STROKECOLOR);
+		clickDrag.push(dragging);
+		addClick(x, y, true);
+	} else {
 	var clickXPrevious = clickX[clickX.length-1];
 	var clickYPrevious = clickY[clickY.length-1];
 
@@ -518,6 +538,7 @@ function addClick(x, y, dragging)
 		clickY.push(y);
 		clickColor.push(STROKECOLOR);
 		clickDrag.push(dragging);
+	}
 	}
 }
 
@@ -658,45 +679,31 @@ function playAnimation()
 	animationStarted=false;
 }
 
-var zplane = zContext.getImageData(0,0,zCanvas.width,zCanvas.height);
+var zplane = zContext.getImageData(0,0,frameSize,frameSize);
 var data = zplane.data;
 
 function redraw()
 {
-	zContext.clearRect(0, 0, zContext.canvas.width, zContext.canvas.height); // Clears the zCanvas
-	zContext.lineWidth = AXISWIDTH;
-	zContext.strokeStyle = "#000000";
-	//axes
-	zContext.beginPath();
-	zContext.moveTo(0,zCanvas.height/2);
-	zContext.lineTo(zCanvas.width,zCanvas.height/2);
-	zContext.closePath();
-	zContext.stroke();
-	// other axis
-	zContext.beginPath();
-	zContext.moveTo(zCanvas.width/2,0);
-	zContext.lineTo(zCanvas.width/2,zCanvas.height);
-	zContext.closePath();
-	zContext.stroke();
-	
+	zContext.clearRect(0, 0, zContext.canvas.width, zContext.canvas.height);
+	zContext.drawImage(osAxis, 0, 0);
 	// labels
 	if(Z_MAX_X == 2 & Z_MIN_X == -2 & Z_MAX_Y == 2 & Z_MIN_Y == -2 & labelsShow){
-		zContextLabels();
+		zContext.drawImage(osAxisLabels, 0, 0);	
 	}
-
+	
 	zContext.lineJoin = "round";
 	zContext.lineWidth = STROKEWIDTH;
 
-	for(var i=0; i < clickX.length; i++) 
+	// Everything starts at 1. Look at addClick function for more details
+	// Have to do this weird thing to stop a visual glitch
+	zContext.beginPath();
+	zContext.closePath();
+	zContext.stroke();
+
+	zContext.strokeStyle = clickColor[0];
+	for(var i=1; i < clickX.length; i++) 
 	{
-		if(i==0){
-			// If it's the first point, just draw a "point"
-			zContext.beginPath();
-			zContext.moveTo(clickX[i]-1, clickY[i]);
-			zContext.lineTo(clickX[i], clickY[i]);
-			zContext.strokeStyle = clickColor[0];
-			zContext.stroke();
-		} else if (!clickDrag[i]) {
+		if (!clickDrag[i]) {
 			// Apparently clickDrag is false if the point is at an end point of an line, and true otherwise. Not sure why this is the case.
 			// End line and start a new line
 			zContext.stroke(); 
@@ -722,70 +729,22 @@ function redraw()
 	wMap();
 }
 
-function zContextLabels(){
-	zContext.lineWidth = AXISWIDTH*2;
-
-	zContext.font = "30px Arial";
-	zContext.textAlign = "right";
-	zContext.fillText("0", zCanvas.width/2 - 5, zCanvas.width/2 + 35);
-	
-	zContext.textAlign = "center";
-	zContext.fillText("1", zCanvas.width*3/4, zCanvas.width/2 + 35);
-	zContext.beginPath();
-	zContext.moveTo(zCanvas.width*3/4,zCanvas.width/2+5);
-	zContext.lineTo(zCanvas.width*3/4,zCanvas.width/2-5);
-	zContext.closePath();
-	zContext.stroke();
-
-	zContext.fillText("1", zCanvas.width*1/4, zCanvas.width/2 + 35);
-	zContext.fillText("-", zCanvas.width*1/4-12, zCanvas.width/2 + 35);
-	zContext.beginPath();
-	zContext.moveTo(zCanvas.width*1/4,zCanvas.width/2+5);
-	zContext.lineTo(zCanvas.width*1/4,zCanvas.width/2-5);
-	zContext.closePath();
-	zContext.stroke();
-
-	zContext.fillText("1", zCanvas.width/2-20, zCanvas.width*1/4+10);
-	zContext.beginPath();
-	zContext.moveTo(zCanvas.width/2+5, zCanvas.width*1/4);
-	zContext.lineTo(zCanvas.width/2-5, zCanvas.width*1/4);
-	zContext.closePath();
-	zContext.stroke();
-
-	zContext.fillText("1", zCanvas.width/2-20, zCanvas.width*3/4+10);
-	zContext.fillText("-", zCanvas.width/2-32, zCanvas.width*3/4+10);
-	zContext.beginPath();
-	zContext.moveTo(zCanvas.width/2+5, zCanvas.width*3/4);
-	zContext.lineTo(zCanvas.width/2-5, zCanvas.width*3/4);
-	zContext.closePath();
-	zContext.stroke();
-}
-
 function wMap()
 {
 	wContext.clearRect(0,0,wCanvasWidth,wCanvasHeight);
-	wContext.lineWidth = AXISWIDTH;
-	wContext.strokeStyle = "#000000";
-	//axes
-	wContext.beginPath();
-	wContext.moveTo(0,wCanvasHeight/2);
-	wContext.lineTo(wCanvasWidth,wCanvasHeight/2);
-	wContext.closePath();
-	wContext.stroke();
-	// other axis
-	wContext.beginPath();
-	wContext.moveTo(wCanvasWidth/2,0);
-	wContext.lineTo(wCanvasWidth/2,wCanvasHeight);
-	wContext.closePath();
-	wContext.stroke();
-
+	wContext.drawImage(osAxis, 0, 0);
 	//labels
 	if(W_MAX_X == 2 & W_MIN_X == -2 & W_MAX_Y == 2 & W_MIN_Y == -2 & labelsShow){
-		wContextLabels();
+		wContext.drawImage(osAxisLabels, 0, 0);	
 	}
 
-	var prevx = -1;
-	var prevy = -1;
+	// Have to do this weird thing to stop a visual glitch
+	wContext.beginPath();
+	wContext.closePath();
+	wContext.stroke();
+
+	var prevx;
+	var prevy;
 
 	wContext.lineWidth = STROKEWIDTH;
 	wContext.lineJoin = "round";
@@ -793,15 +752,8 @@ function wMap()
 	
 	for(var i = 0; i < clickDrag.length; i++)
 	{
-		var k = clickX[i]*zCanvas.width + clickY[i];
-
-		var red = data[k];
-		var green = data[k+1];
-		var blue = data[k+2];
-		var alpha = data[k+3];
-
-		var zreal = Z_MIN_X + (Z_MAX_X - Z_MIN_X)*(clickX[i]/zCanvas.width);
-		var zimg = Z_MIN_Y + (Z_MAX_Y - Z_MIN_Y)*(1-(clickY[i]/zCanvas.height));
+		var zreal = Z_MIN_X + (Z_MAX_X - Z_MIN_X)*(clickX[i]/frameSize);
+		var zimg = Z_MIN_Y + (Z_MAX_Y - Z_MIN_Y)*(1-(clickY[i]/frameSize));
 		var inp = Complex(zreal, zimg);
 		var out = f(inp);
 		var out_re = out.real();
@@ -810,6 +762,7 @@ function wMap()
 		var out_x = Math.round(((out_re - W_MIN_X)/(W_MAX_X - W_MIN_X))*wCanvasWidth)
 		var out_y = Math.round((1-((out_im - W_MIN_Y)/(W_MAX_Y - W_MIN_Y)))*wCanvasHeight)
 
+		// Start drawing at the second point. Look at addClick function for more details
 		if(i != 0)
 		{
 			if(!clickDrag[i]){
@@ -822,12 +775,14 @@ function wMap()
 				wContext.moveTo(out_x, out_y);
 				wContext.beginPath();
 			} else {
-				// Continue a line + some code inherited about branch cuts which I don't understand
-				if((distance(out_x,out_y,prevx,prevy)/distance(clickX[i-1],clickY[i-1],clickX[i],clickY[i]))<BRANCH_CUT_THRESHHOLD)
-					wContext.moveTo(prevx, prevy);
-				else
+				// Continue a line
+				if((distance(out_x,out_y,prevx,prevy)/distance(clickX[i-1],clickY[i-1],clickX[i],clickY[i]))<BRANCH_CUT_THRESHHOLD){
+					// No branch cut
+					wContext.lineTo(out_x,out_y);
+				} else {
+					// Branch cut exists
 					wContext.moveTo(out_x, out_y);
-				wContext.lineTo(out_x,out_y);
+				}					
 			}
 		}
 		prevx = out_x;
@@ -838,46 +793,65 @@ function wMap()
 	wContext.stroke();
 }
 
-function wContextLabels(){
-	wContext.lineWidth = AXISWIDTH*2;
 
-	wContext.font = "30px Arial";
-	wContext.textAlign = "right";
-	wContext.fillText("0", wCanvasWidth/2 - 5, wCanvasWidth/2 + 35);
+function initOffscreen(){
+	osAxisContext.lineWidth = AXISWIDTH;
+	osAxisContext.strokeStyle = "#000000";
+	//axes
+	osAxisContext.beginPath();
+	osAxisContext.moveTo(0,frameSize/2);
+	osAxisContext.lineTo(frameSize,frameSize/2);
+	osAxisContext.closePath();
+	osAxisContext.stroke();
+	// other axis
+	osAxisContext.beginPath();
+	osAxisContext.moveTo(frameSize/2,0);
+	osAxisContext.lineTo(frameSize/2,frameSize);
+	osAxisContext.closePath();
+	osAxisContext.stroke();
+
+	osAxisLabelsContext.drawImage(osAxis, 0 ,0);
+
+	osAxisLabelsContext.lineWidth = AXISWIDTH*2;
+
+	osAxisLabelsContext.font = "30px Arial";
+	osAxisLabelsContext.textAlign = "right";
+	osAxisLabelsContext.fillText("0", frameSize/2 - 5, frameSize/2 + 35);
 	
-	wContext.textAlign = "center";
-	wContext.fillText("1", wCanvasWidth*3/4, wCanvasWidth/2 + 35);
-	wContext.beginPath();
-	wContext.moveTo(wCanvasWidth*3/4,wCanvasWidth/2+5);
-	wContext.lineTo(wCanvasWidth*3/4,wCanvasWidth/2-5);
-	wContext.closePath();
-	wContext.stroke();
+	osAxisLabelsContext.textAlign = "center";
+	osAxisLabelsContext.fillText("1", frameSize*3/4, frameSize/2 + 35);
+	osAxisLabelsContext.beginPath();
+	osAxisLabelsContext.moveTo(frameSize*3/4,frameSize/2+5);
+	osAxisLabelsContext.lineTo(frameSize*3/4,frameSize/2-5);
+	osAxisLabelsContext.closePath();
+	osAxisLabelsContext.stroke();
 
-	wContext.fillText("1", wCanvasWidth*1/4, wCanvasWidth/2 + 35);
-	wContext.fillText("-", wCanvasWidth*1/4-12, wCanvasWidth/2 + 35);
-	wContext.beginPath();
-	wContext.moveTo(wCanvasWidth*1/4,wCanvasWidth/2+5);
-	wContext.lineTo(wCanvasWidth*1/4,wCanvasWidth/2-5);
-	wContext.closePath();
-	wContext.stroke();
+	osAxisLabelsContext.fillText("1", frameSize*1/4, frameSize/2 + 35);
+	osAxisLabelsContext.fillText("-", frameSize*1/4-12, frameSize/2 + 35);
+	osAxisLabelsContext.beginPath();
+	osAxisLabelsContext.moveTo(frameSize*1/4,frameSize/2+5);
+	osAxisLabelsContext.lineTo(frameSize*1/4,frameSize/2-5);
+	osAxisLabelsContext.closePath();
+	osAxisLabelsContext.stroke();
 
-	wContext.fillText("1", wCanvasWidth/2-20, wCanvasWidth*1/4+10);
-	wContext.beginPath();
-	wContext.moveTo(wCanvasWidth/2+5, wCanvasWidth*1/4);
-	wContext.lineTo(wCanvasWidth/2-5, wCanvasWidth*1/4);
-	wContext.closePath();
-	wContext.stroke();
+	osAxisLabelsContext.fillText("1", frameSize/2-20, frameSize*1/4+10);
+	osAxisLabelsContext.beginPath();
+	osAxisLabelsContext.moveTo(frameSize/2+5, frameSize*1/4);
+	osAxisLabelsContext.lineTo(frameSize/2-5, frameSize*1/4);
+	osAxisLabelsContext.closePath();
+	osAxisLabelsContext.stroke();
 
-	wContext.fillText("1", wCanvasWidth/2-20, wCanvasWidth*3/4+10);
-	wContext.fillText("-", wCanvasWidth/2-32, wCanvasWidth*3/4+10);
-	wContext.beginPath();
-	wContext.moveTo(wCanvasWidth/2+5, wCanvasWidth*3/4);
-	wContext.lineTo(wCanvasWidth/2-5, wCanvasWidth*3/4);
-	wContext.closePath();
-	wContext.stroke();
+	osAxisLabelsContext.fillText("1", frameSize/2-20, frameSize*3/4+10);
+	osAxisLabelsContext.fillText("-", frameSize/2-32, frameSize*3/4+10);
+	osAxisLabelsContext.beginPath();
+	osAxisLabelsContext.moveTo(frameSize/2+5, frameSize*3/4);
+	osAxisLabelsContext.lineTo(frameSize/2-5, frameSize*3/4);
+	osAxisLabelsContext.closePath();
+	osAxisLabelsContext.stroke();
 }
 
 // Initliase and start animation
+initOffscreen();
 redraw();
 animationUpdateLoop();
 fpsUpdate();
