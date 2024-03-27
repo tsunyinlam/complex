@@ -12,7 +12,7 @@ A fork of [mabokin's](https://github.com/mabotkin/complex) complex mapping visua
 
 # Documentation
 
-The visualizer webpage should work on all desktop / mobile browsers. 
+The visualizer webpage should work on all desktop / mobile browsers.
 
 ## Basic Usage 
 - Write your f(z,t) or u(x,y,t) and v(x,y,t) in the textboxes (See below)
@@ -23,7 +23,7 @@ The visualizer webpage should work on all desktop / mobile browsers.
     - Drawing tools are on the leftmost column
     - Change color of the pen at any time
 - Or choose `Phi` or `f` to animate and click `Play Animation`
-    - `in >≈ seconds` gives you an lower bound on the time it takes to animate, usually it takes a bit longer than that to finish the animation
+    - Animate functions with one time parameter
 
 ## Function input
 
@@ -38,6 +38,6 @@ You could also use `pi` for $\pi$.
 ## Settings
 
 - Autolink
-    - Whenever you draw quickly on the Canvas, it only registers a small number of points and interpolates the rest with a straight line. The autolink ensures that the interpolation is sufficiently dense so that the plot looks smooth. The lower the number, the worser the performance.
-- Animation
-    - Frames per seconds: The programme would try to render that number of frames per second. The higher the number the longer it takes to finish the animation
+    - Whenever you draw quickly on the Canvas, the canvas only registers a small number of points. Autolink interpolates these points with straight lines. The fewer the points, the better the quality of interpolation, but at the cost of performance.
+- Branch cut threshold
+    - The branch cut threshold ensures that discontinuities in the function are visually represented as breaks in the lines drawn on the right plane. A higher branch cut threshold means that the code will tolerate larger differences in function values before visually breaking the line.
