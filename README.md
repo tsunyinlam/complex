@@ -69,6 +69,6 @@ You could also use `pi` for $\pi$.
 - Branch cut threshold
     - The branch cut threshold ensures that discontinuities in the function are visually represented as breaks in the lines drawn on the right plane. A higher branch cut threshold means that the code will tolerate larger differences in function values before visually breaking the line
  
-### Errata
+## Errata
 
 Not all aspects of the plotter is covered here. If you are confused about anything, please [raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues)!
