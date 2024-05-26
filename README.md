@@ -28,7 +28,7 @@ The visualizer webpage should work on all desktop / mobile browsers.
     - Click this button everytime after you change the t parameter or the functions u and v
 - Draw on the left plane using the `Pen` tool and see the output on the right
 
-### ℂ → ℂ functions
+### ℂ to ℂ functions
 - Input the functions f(z,t) in the textboxes
     - t is a time parameter that can be set constant or be used as a parameter for animation
     - e.g. f(z,t)=1/z
@@ -68,3 +68,7 @@ You could also use `pi` for $\pi$.
     - Choose a higher Max Distance for a better performance at the cost of quality
 - Branch cut threshold
     - The branch cut threshold ensures that discontinuities in the function are visually represented as breaks in the lines drawn on the right plane. A higher branch cut threshold means that the code will tolerate larger differences in function values before visually breaking the line
+ 
+### Errata
+
+Not all aspects of the plotter is covered here. If you are confused about anything, please [raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues)!
