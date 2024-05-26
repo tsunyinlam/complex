@@ -8,8 +8,6 @@ Hosted on https://tobylam.xyz/plotter
 
 A fork of [mabokin's](https://github.com/mabotkin/complex) complex mapping visualizer. [Raise an issue](https://github.com/tsunyinlam/mapping-visualizer/issues) for any bugs / suggestions!
 
-![screenshot](https://tobylam.xyz/assets/images/2023-11-24-screenshot.webp)
-
 # Documentation
 
 The visualizer webpage should work on all desktop / mobile browsers.
